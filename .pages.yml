@@ -2,17 +2,13 @@
 # Pages CMS 核心配置文件
 
 # ====================================================================
-# MEDIA: 媒体配置
-# --------------------------------------------------------------------
-# 定义两个媒体存储区：一个用于图片，一个用于通用文件。
+# MEDIA: 媒体配置 (保持不变)
+# ====================================================================
 media:
   - name: images
     label: 图片库
-    # 仓库中的存储路径
     input: src/assets/images
-    # 网站中访问图片的路径
     output: /assets/images
-    # 仅允许显示图片类型
     categories: [ image ] 
     extensions: [ jpg, jpeg, png, webp, svg ]
 
@@ -20,16 +16,13 @@ media:
     label: 文档与附件
     input: src/assets/files
     output: /assets/files
-    # 允许所有常见文档和压缩文件
     categories: [ document, video, compressed ]
 
 
 # ====================================================================
-# COMPONENTS: 可重用组件
-# --------------------------------------------------------------------
-# 定义可复用的字段组，例如 SEO 元数据和 Call-to-Action 按钮。
+# COMPONENTS: 可重用组件 (保持不变)
+# ====================================================================
 components:
-  # 1. SEO 优化组件
   seo:
     label: SEO 元数据
     type: object
@@ -46,7 +39,6 @@ components:
         description: 最佳长度为 150-160 个字符。
         options: { maxlength: 160 }
         
-  # 2. CTA (Call to Action) 按钮组件
   cta_button:
     label: 行动按钮
     type: object
@@ -60,7 +52,7 @@ components:
         type: string
         required: true
         pattern: 
-          regex: '^(https?:\/\/|\/|#).*' # 允许 http/https, 相对路径或片段
+          regex: '^(https?:\/\/|\/|#).*'
           message: '请输入有效的 URL (包含 http/https, / 或 #)'
 
 
@@ -69,30 +61,23 @@ components:
 # --------------------------------------------------------------------
 content:
   # ----------------------------------------
-  # 1. 集合：博客文章 (Blog Posts)
+  # 1. 集合：博客文章 (Blog Posts) - 【日期格式已修正】
   # ----------------------------------------
   - name: posts
     label: 博客文章
     type: collection
     path: src/posts
-    # 文件名格式：年份-月份-日期-主要字段值.md
     filename: "{year}-{month}-{day}-{primary}.md"
-    # 默认使用 YAML Frontmatter 格式
     format: yaml-frontmatter 
     
-    # 集合视图配置
     view:
-      # 在列表页显示这些字段
       fields: [ title, date, published ]
-      # 使用 title 作为主要标识符
       primary: title
-      # 默认按日期降序排列（最新优先）
       sort: [ date, title ]
       default:
         sort: date
         order: desc
         
-    # 字段列表
     fields:
       - name: title
         label: 标题
@@ -102,30 +87,30 @@ content:
       - name: published
         label: 是否发布
         type: boolean
-        default: false # 默认为未发布
+        default: false
         
       - name: date
         label: 发布日期
         type: date
         required: true
-        options: { format: YYYY-MM-DD }
+        # *** 修正点：将 YYYY 改为 yyyy ***
+        options: { format: yyyy-MM-dd } 
 
       - name: author
         label: 作者
         type: select
         options: { values: [ 'Jane Doe', 'John Smith', 'Pages CMS Team' ] }
 
-      - name: body # 保留字段名 body 用于 Markdown/主体内容
+      - name: body
         label: 文章内容
         type: rich-text 
         
-      # 引用 SEO 组件
       - name: seo
         label: SEO
         component: seo
 
   # ----------------------------------------
-  # 2. 文件：关于页面 (About Page)
+  # 2. 文件：关于页面 (About Page) (保持不变)
   # ----------------------------------------
   - name: about_page
     label: 关于我们页面
@@ -138,11 +123,10 @@ content:
         type: string
         required: true
         
-      - name: body # 关于页面的主体内容
+      - name: body
         label: 页面主体
         type: rich-text
         
-      # 引用 CTA 组件 (使用列表，允许添加多个按钮)
       - name: primary_ctas
         label: 主要行动按钮
         type: object
@@ -151,19 +135,16 @@ content:
           min: 1
           max: 3
           collapsible: true
-          summary: "{fields.text}" # 列表摘要显示按钮文本
+          summary: "{fields.text}"
           
-      # 引用 SEO 组件
       - name: seo
         label: SEO
         component: seo
         
 # ====================================================================
-# SETTINGS: 全局行为设置
-# --------------------------------------------------------------------
+# SETTINGS: 全局行为设置 (保持不变)
+# ====================================================================
 settings:
-  # 隐藏 Pages CMS 界面中的 "Settings" 链接
   hide: false 
   content:
-    # 启用内容合并：只更新表单中编辑过的字段，保留文件中未在配置中定义的字段。
     merge: true

@@ -1,99 +1,169 @@
-# 文件名: config.yml 或 pages-cms.yml
-# Pages CMS 配置文件 - 定义内容编辑结构
-# ----------------------------------------------------
+# .pages.yml
+# Pages CMS 核心配置文件
 
-# === 全局媒体配置 ===
+# ====================================================================
+# MEDIA: 媒体配置
+# --------------------------------------------------------------------
+# 定义两个媒体存储区：一个用于图片，一个用于通用文件。
 media:
-  input: src/media
-  output: /media
+  - name: images
+    label: 图片库
+    # 仓库中的存储路径
+    input: src/assets/images
+    # 网站中访问图片的路径
+    output: /assets/images
+    # 仅允许显示图片类型
+    categories: [ image ] 
+    extensions: [ jpg, jpeg, png, webp, svg ]
 
-# === 内容定义 ===
+  - name: files
+    label: 文档与附件
+    input: src/assets/files
+    output: /assets/files
+    # 允许所有常见文档和压缩文件
+    categories: [ document, video, compressed ]
+
+
+# ====================================================================
+# COMPONENTS: 可重用组件
+# --------------------------------------------------------------------
+# 定义可复用的字段组，例如 SEO 元数据和 Call-to-Action 按钮。
+components:
+  # 1. SEO 优化组件
+  seo:
+    label: SEO 元数据
+    type: object
+    description: 搜索引擎优化所需的标题和描述。
+    fields:
+      - name: seo_title
+        label: SEO 标题
+        type: string
+        description: 最佳长度为 60-70 个字符。
+        required: true
+      - name: seo_description
+        label: SEO 描述
+        type: text
+        description: 最佳长度为 150-160 个字符。
+        options: { maxlength: 160 }
+        
+  # 2. CTA (Call to Action) 按钮组件
+  cta_button:
+    label: 行动按钮
+    type: object
+    fields:
+      - name: text
+        label: 按钮文本
+        type: string
+        required: true
+      - name: url
+        label: 链接地址 (URL)
+        type: string
+        required: true
+        pattern: 
+          regex: '^(https?:\/\/|\/|#).*' # 允许 http/https, 相对路径或片段
+          message: '请输入有效的 URL (包含 http/https, / 或 #)'
+
+
+# ====================================================================
+# CONTENT: 内容定义
+# --------------------------------------------------------------------
 content:
   # ----------------------------------------
-  # 1. 集合：文档 (docs) - 标题保持必需
+  # 1. 集合：博客文章 (Blog Posts)
   # ----------------------------------------
-  - name: docs
-    label: Documentation
+  - name: posts
+    label: 博客文章
     type: collection
-    path: src/docs
-    filename: "{primary}.md"
+    path: src/posts
+    # 文件名格式：年份-月份-日期-主要字段值.md
+    filename: "{year}-{month}-{day}-{primary}.md"
+    # 默认使用 YAML Frontmatter 格式
+    format: yaml-frontmatter 
     
+    # 集合视图配置
     view:
-      fields: [ title, order ]
+      # 在列表页显示这些字段
+      fields: [ title, date, published ]
+      # 使用 title 作为主要标识符
       primary: title
-      sort: [ order, title ]
-      
-    default:
-      sort: order
-      order: asc
-      
+      # 默认按日期降序排列（最新优先）
+      sort: [ date, title ]
+      default:
+        sort: date
+        order: desc
+        
+    # 字段列表
     fields:
       - name: title
-        label: Title
+        label: 标题
         type: string
-        required: true # <--- 保持必需 (用于文件名和列表)
+        required: true
+
+      - name: published
+        label: 是否发布
+        type: boolean
+        default: false # 默认为未发布
         
-      - name: description
-        label: Description
-        type: string
-        options: { maxlength: 180 }
+      - name: date
+        label: 发布日期
+        type: date
+        required: true
+        options: { format: YYYY-MM-DD }
+
+      - name: author
+        label: 作者
+        type: select
+        options: { values: [ 'Jane Doe', 'John Smith', 'Pages CMS Team' ] }
+
+      - name: body # 保留字段名 body 用于 Markdown/主体内容
+        label: 文章内容
+        type: rich-text 
         
-      - name: order
-        label: Order
-        type: number
-        
-      - name: body
-        label: Body
-        type: rich-text
+      # 引用 SEO 组件
+      - name: seo
+        label: SEO
+        component: seo
 
   # ----------------------------------------
-  # 2. 文件：主页 (homepage) - 【最终修正区域】
+  # 2. 文件：关于页面 (About Page)
   # ----------------------------------------
-  - label: Home page
-    path: src/index.njk
-    name: homepage
+  - name: about_page
+    label: 关于我们页面
     type: file
+    path: src/about.md
     
     fields:
-      - name: layout
+      - name: title
+        label: 页面标题
         type: string
-        hidden: true
-        default: layouts/base.njk
+        required: true
         
-      # 组合字段 1: Promotion
-      - name: Promotion
-        label: Promotion
+      - name: body # 关于页面的主体内容
+        label: 页面主体
+        type: rich-text
+        
+      # 引用 CTA 组件 (使用列表，允许添加多个按钮)
+      - name: primary_ctas
+        label: 主要行动按钮
         type: object
-        # 显式默认值
-        default: { text: "", url: "" } 
-        fields:
-          - name: text
-            label: Text
-            type: string
-            
-          - name: url
-            label: URL
-            type: string
-            # 移除 required: true，以允许文件创建
-            # required: true 
-            
-      # 组合字段 2: Features
-      - name: features
-        label: Features
-        type: object
-        # 显式默认值
-        default: { icon: "", title: "", description: "" } 
-        fields:
-          - name: icon
-            label: Icon
-            type: string
-            
-          - name: title
-            label: Title
-            type: string
-            # 移除 required: true，以允许文件创建
-            # required: true 
-            
-          - name: description
-            label: Description
-            type: string
+        component: cta_button
+        list: 
+          min: 1
+          max: 3
+          collapsible: true
+          summary: "{fields.text}" # 列表摘要显示按钮文本
+          
+      # 引用 SEO 组件
+      - name: seo
+        label: SEO
+        component: seo
+        
+# ====================================================================
+# SETTINGS: 全局行为设置
+# --------------------------------------------------------------------
+settings:
+  # 隐藏 Pages CMS 界面中的 "Settings" 链接
+  hide: false 
+  content:
+    # 启用内容合并：只更新表单中编辑过的字段，保留文件中未在配置中定义的字段。
+    merge: true

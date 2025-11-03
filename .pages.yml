@@ -1,34 +1,30 @@
-# .pages.yml - 完整配置示例
+# .pages.yml - 完整配置示例（已修复 "Add an entry" 错误）
 # Pages CMS 配置文件，采用中文标签和健壮的配置
 
 # ----------------------------------------------------------------------
 # 媒体文件配置 (media)
-# 定义文件上传的文件夹，支持更广泛的格式
 # ----------------------------------------------------------------------
 media:
-  - name: images # 唯一机器名
+  - name: images
     label: 🖼️ 网站图片 (全格式)
-    input: src/images # 仓库中的图片存储路径
-    output: /images # 网站的公共访问路径
-    # 尽可能支持所有主流图片格式，包括 WebP 和 AVIF
+    input: src/images
+    output: /images
     extensions: [jpg, jpeg, png, gif, svg, bmp, tif, tiff, webp, avif] 
-    path: images/ # 媒体浏览器默认打开的子路径
+    path: images/
     description: 专用于网站内容图片的上传，支持多种格式。
 
-  - name: documents # 唯一机器名
+  - name: documents
     label: 📄 网站文档 (全格式)
-    input: src/files # 仓库中的文档存储路径
-    output: /files # 网站的公共访问路径
-    # 使用类别，以支持所有常见文档类型
-    categories: [document, video, audio, compressed] # 扩展支持文档、视频、音频和压缩文件
+    input: src/files
+    output: /files
+    categories: [document, video, audio, compressed]
     path: files/
     description: 用于 PDF、Word、视频等非图片文件的上传。
 
-  - name: assets # 唯一机器名
+  - name: assets
     label: 🌐 静态资源 (图标/Logo)
-    input: public/assets # 仓库中的静态资源路径
-    output: /assets # 网站的公共访问路径
-    # 特别针对图标、Logo 等小尺寸资源
+    input: public/assets
+    output: /assets
     extensions: [svg, ico, webp, avif, png]
     description: 用于网站图标、Logo 等特定静态资源的上传。
 
@@ -43,7 +39,7 @@ components:
     fields:
       - name: title
         label: SEO 标题 (Title Tag)
-        type: string # 修正为 string 以限制一行
+        type: string
         required: true
         description: 用于搜索引擎结果页 (SERP) 和浏览器标签页显示的标题。建议长度不超过60字符。
       - name: description
@@ -54,11 +50,11 @@ components:
         label: 关键词 (Keywords)
         type: string
         list: true
-        description: 页面相关的关键词列表（对现代SEO影响较小，但可保留）。
+        description: 页面相关的关键词列表。
       - name: og_image
         label: 社交媒体分享图 (Open Graph Image)
         type: image
-        description: 在社交媒体（如微信、Facebook）分享时显示的图片。建议尺寸 1200x630 像素。
+        description: 在社交媒体分享时显示的图片。
 
   # 作者信息组件
   author:
@@ -90,7 +86,7 @@ components:
     fields:
       - name: title
         label: 主标题
-        type: string # 修正为 string
+        type: string
         required: true
       - name: subtitle
         label: 副标题/宣传语
@@ -105,7 +101,7 @@ components:
         label: 行动号召链接 (URL)
         type: string
         pattern: 
-          regex: '^(http|https|\/).*$' # 允许 http/https 链接或内部路径 /
+          regex: '^(http|https|\/).*$'
           message: '请输入一个有效的 URL (如 /about 或 https://...)'
 
 # ----------------------------------------------------------------------
@@ -118,19 +114,17 @@ content:
     type: collection
     path: src/content/posts
     format: yaml-frontmatter
-    # 修正 slug 为变量引用 {slug}，确保与下面的字段匹配
-    filename: '{year}-{month}-{day}-{slug}.md' 
+    # ✅ 修复: 使用 {primary} 确保在创建时 title 字段可以被转换为 slug
+    filename: '{year}-{month}-{day}-{primary}.md' 
     subfolders: false
     
     # 视图配置
     view:
-      layout: list
+      primary: title # primary 字段必须是 title
       fields: [title, date, published, author.name, categories]
-      primary: title
       sort: [date, title]
-      search: [title, description, body, categories] # 搜索范围加入 categories
+      search: [title, description, body, categories]
       default:
-        search: ''
         sort: date
         order: desc
     
@@ -138,25 +132,20 @@ content:
     fields:
       - name: title
         label: 文章标题
-        type: string # 修正为 string 以限制单行
+        type: string
         required: true
         pattern: 
           regex: '^.{10,100}$'
           message: '标题长度应在10-100个字符之间'
       
-      - name: slug
-        label: URL 别名 (Slug)
-        type: string
-        required: true
-        pattern: 
-          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
-          message: '只能使用小写字母、数字和连字符 (例如: my-new-post)'
-      
+      # ⚠️ 移除 slug 字段：因为 filename 已经使用 {primary} 自动生成 slug，不再需要手动 slug 字段来避免冲突
+      # 如果你坚持要 slug 字段，请将其设置为 hidden: true 且提供 default: '{{uuid}}'
+
       - name: date
         label: 发布日期
         type: date
         required: true
-        default: '{{now}}' # 修正为 Pages CMS 支持的 {{now}} 占位符
+        default: '{{now}}' # 确保有默认值
       
       - name: updated
         label: 更新日期
@@ -180,7 +169,7 @@ content:
           max: 3
           collapsible: false
         options:
-          suggestions: [技术开发, 产品设计, 市场运营, 行业新闻, 生活随笔] # 优化中文提示
+          suggestions: [技术开发, 产品设计, 市场运营, 行业新闻, 生活随笔]
       
       - name: tags
         label: 文章标签 (Keywords)
@@ -189,13 +178,13 @@ content:
         options:
           suggestions: [JavaScript, React, Vue, CSS, 性能优化, 用户体验, SEO]
       
-      - component: seo # 引用 SEO 组件
+      - component: seo
       
       - name: cover
         label: 封面图片
         type: image
         options:
-          media: images # 限制从 'images' 媒体文件夹选择
+          media: images
       
       - name: excerpt
         label: 摘要
@@ -203,7 +192,7 @@ content:
         description: '文章摘要，用于列表页和 SEO 描述。'
       
       - name: author
-        component: author # 引用作者组件
+        component: author
       
       - name: body
         label: 正文内容 (Markdown/富文本)
@@ -216,12 +205,13 @@ content:
     type: collection
     path: src/content/pages
     format: yaml-frontmatter
-    filename: '{slug}.md'
+    # ✅ 修复: 使用 {primary} 避免创建时 {slug} 变量缺失
+    filename: '{primary}.md' 
     
     view:
-      layout: tree # 启用树状视图，适合层级页面
+      layout: tree
       node:
-        filename: index.md # 允许文件夹内有 index.md 作为父节点内容
+        filename: index.md
         hideDirs: nodes
       fields: [title, path, published]
       primary: title
@@ -257,7 +247,7 @@ content:
         type: object
         list:
           collapsible:
-            collapsed: true # 默认折叠，节省空间
+            collapsed: true
             summary: "{type} - {title}"
         fields:
           - name: type
@@ -311,13 +301,14 @@ content:
     type: collection
     path: src/content/products
     format: yaml-frontmatter
-    filename: '{slug}.md' # 假设文件名基于 slug
+    # ✅ 修复: 显式设置 filename 为 {primary}.md，避免使用默认的日期模式
+    filename: '{primary}.md'
     
     view:
+      primary: name # primary 字段为 name
       fields: [name, price, category, featured, published]
-      primary: name
       sort: [price, name]
-      search: [name, description, features, category] # 增加 category 搜索
+      search: [name, description, features, category]
       default:
         sort: name
         order: asc
@@ -332,6 +323,7 @@ content:
         label: URL 别名 (Slug)
         type: string
         required: true
+        description: '用于产品详情页 URL 的唯一标识，请使用小写字母和连字符。'
         pattern: 
           regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
           message: '只能使用小写字母、数字和连字符'
@@ -355,7 +347,7 @@ content:
         type: select
         required: true
         options:
-          values: # 使用键值对，键用于代码，值用于 CMS 显示
+          values:
             electronics: 📱 电子产品
             clothing: 👕 服装配饰
             books: 📚 图书音像
@@ -377,15 +369,13 @@ content:
         list:
           min: 1
           max: 5
-          collapsible: true
         options:
-          media: images # 限制从 'images' 媒体文件夹选择
+          media: images
       
       - name: features
         label: 产品特性/卖点
         type: string
         list: true
-        description: 产品的核心卖点，每行一个。
       
       - name: specifications
         label: 规格参数
@@ -393,7 +383,7 @@ content:
         list:
           collapsible:
             collapsed: true
-            summary: "{key}: {value}" # 列表概览显示参数名和值
+            summary: "{key}: {value}"
         fields:
           - name: key
             label: 参数名
@@ -411,7 +401,7 @@ content:
     label: ⚙️ 全局配置
     type: file
     path: src/data/site.yaml
-    format: yaml # 修正：确保格式正确 (可以是 yaml, json, toml 等)
+    format: yaml
     
     fields:
       - name: site
@@ -429,7 +419,7 @@ content:
             label: 网站 Logo
             type: image
             options:
-              media: assets # 限制从 'assets' 媒体文件夹选择
+              media: assets
           - name: favicon
             label: 网站图标 (Favicon)
             type: image
@@ -479,7 +469,7 @@ content:
     label: 🗺️ 导航菜单
     type: file
     path: src/data/navigation.yaml
-    format: yaml # 修正：确保格式正确
+    format: yaml
     
     fields:
       - name: header
@@ -539,6 +529,6 @@ content:
 # 全局设置 (settings)
 # ----------------------------------------------------------------------
 settings:
-  hide: false # 是否在 CMS 界面显示“设置”入口
+  hide: false
   content:
-    merge: true # 启用内容合并：只更新表单提交的字段，保留文件中未在配置中定义的其他字段。
+    merge: true

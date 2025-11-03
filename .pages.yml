@@ -112,34 +112,44 @@ content:
   # ----------------------------------------
   # 2. 文件：关于页面 (About Page) (保持不变)
   # ----------------------------------------
-  - name: about_page
-    label: 关于我们页面
-    type: file
-    path: src/about.md
-    
+      - name: about_page
+        label: 关于我们页面
+        type: file
+        path: src/about.md
+          
     fields:
       - name: title
         label: 页面标题
         type: string
         required: true
+        # 【修正 1】为必需的顶层字段添加默认值
+        default: "" 
         
       - name: body
         label: 页面主体
         type: rich-text
         
+      # primary_ctas 字段
       - name: primary_ctas
         label: 主要行动按钮
         type: object
         component: cta_button
+        # 【修正 2】移除 required: true 标记，以允许创建空文件
+        # list 最小值为 1 仍会强制用户在编辑时添加至少一项，但允许文件创建
         list: 
-          min: 1
+          min: 1 
           max: 3
           collapsible: true
           summary: "{fields.text}"
+          # 保持列表的默认值为空数组
+          default: []
           
+      # seo 字段
       - name: seo
         label: SEO
         component: seo
+        # 【修正 3】为引用组件的字段提供包含子字段默认值的 default
+        default: { seo_title: "", seo_description: "" }
         
 # ====================================================================
 # SETTINGS: 全局行为设置 (保持不变)

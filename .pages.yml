@@ -1,4 +1,4 @@
-# 文件名: config.yml 或 pages-cms.yml (取决于您的项目配置)
+# 文件名: config.yml 或 pages-cms.yml
 # Pages CMS 配置文件 - 定义内容编辑结构
 # ----------------------------------------------------
 
@@ -10,7 +10,7 @@ media:
 # === 内容定义 ===
 content:
   # ----------------------------------------
-  # 1. 集合：文档 (docs) - (保持不变)
+  # 1. 集合：文档 (docs) - 标题保持必需
   # ----------------------------------------
   - name: docs
     label: Documentation
@@ -31,7 +31,7 @@ content:
       - name: title
         label: Title
         type: string
-        required: true
+        required: true # <--- 保持必需 (用于文件名和列表)
         
       - name: description
         label: Description
@@ -47,7 +47,7 @@ content:
         type: rich-text
 
   # ----------------------------------------
-  # 2. 文件：主页 (homepage) - 【关键修正区域】
+  # 2. 文件：主页 (homepage) - 【最终修正区域】
   # ----------------------------------------
   - label: Home page
     path: src/index.njk
@@ -64,7 +64,7 @@ content:
       - name: Promotion
         label: Promotion
         type: object
-        # 【修正】为必需字段 url 提供一个初始空值 ""
+        # 显式默认值
         default: { text: "", url: "" } 
         fields:
           - name: text
@@ -74,13 +74,14 @@ content:
           - name: url
             label: URL
             type: string
-            required: true # 保持必需
+            # 移除 required: true，以允许文件创建
+            # required: true 
             
       # 组合字段 2: Features
       - name: features
         label: Features
         type: object
-        # 【修正】为必需字段 title 提供一个初始空值 ""
+        # 显式默认值
         default: { icon: "", title: "", description: "" } 
         fields:
           - name: icon
@@ -90,7 +91,8 @@ content:
           - name: title
             label: Title
             type: string
-            required: true # 保持必需
+            # 移除 required: true，以允许文件创建
+            # required: true 
             
           - name: description
             label: Description

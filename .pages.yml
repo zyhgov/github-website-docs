@@ -1,15 +1,15 @@
-# .pages.yml - 修正完整版
+# .pages.yml - 中文完整版
 # Pages CMS 配置文件
 
 # 媒体文件配置
 media:
   - name: images
-    label: Images
+    label: 图片库
     input: images
     output: /images
     categories: [image]
   - name: documents
-    label: Documents
+    label: 文档库
     input: files
     output: /files
     categories: [document]
@@ -18,43 +18,43 @@ media:
 components:
   # SEO组件
   seo:
-    label: SEO Settings
+    label: SEO设置
     type: object
     fields:
       - name: meta_title
-        label: Meta Title
+        label: Meta标题
         type: text
-        description: Title for search engines
+        description: 用于搜索引擎显示的标题
       - name: meta_description
-        label: Meta Description
+        label: Meta描述
         type: text
-        description: Description for search engines and social sharing
+        description: 用于搜索引擎和社交媒体分享的描述
       - name: og_image
-        label: Social Media Image
+        label: 社交媒体图片
         type: image
-        description: Image displayed when sharing on social media
+        description: 在社交媒体分享时显示的图片
 
   # 作者信息组件
   author:
-    label: Author Information
+    label: 作者信息
     type: object
     fields:
       - name: name
-        label: Name
+        label: 姓名
         type: string
         required: true
       - name: email
-        label: Email
+        label: 邮箱
         type: string
       - name: avatar
-        label: Avatar
+        label: 头像
         type: image
 
 # 内容配置
 content:
-  # 博客文章集合 - 简化版本确保工作
+  # 博客文章集合
   - name: posts
-    label: Blog Posts
+    label: 博客文章
     type: collection
     path: content/posts
     format: yaml-frontmatter
@@ -70,42 +70,42 @@ content:
         sort: date
         order: desc
     
-    # 字段定义 - 确保所有必需字段都有
+    # 字段定义
     fields:
       - name: title
-        label: Title
+        label: 文章标题
         type: text
         required: true
       
       - name: slug
-        label: Slug
+        label: URL别名
         type: string
         required: true
       
       - name: date
-        label: Date
+        label: 发布日期
         type: date
         required: true
         default: 'now'
       
       - name: published
-        label: Published
+        label: 发布状态
         type: boolean
         default: false
       
       - name: excerpt
-        label: Excerpt
+        label: 文章摘要
         type: text
-        description: 'Short description for listing pages'
+        description: '简短的文章摘要，用于列表页显示'
       
       - name: body
-        label: Content
+        label: 正文内容
         type: rich-text
         required: true
 
   # 页面集合
   - name: pages
-    label: Pages
+    label: 页面管理
     type: collection
     path: content/pages
     format: yaml-frontmatter
@@ -113,49 +113,49 @@ content:
     
     view:
       layout: list
-      fields: [title, path, published]
+      fields: [title, published]
       primary: title
       sort: [title]
     
     fields:
       - name: title
-        label: Page Title
+        label: 页面标题
         type: text
         required: true
       
       - name: slug
-        label: Slug
+        label: URL别名
         type: string
         required: true
       
       - name: published
-        label: Published
+        label: 发布状态
         type: boolean
         default: true
       
       - name: body
-        label: Page Content
+        label: 页面内容
         type: rich-text
 
   # 网站配置
   - name: site
-    label: Site Configuration
+    label: 网站配置
     type: file
     path: data/site.yaml
     format: yaml
     
     fields:
       - name: title
-        label: Site Title
+        label: 网站标题
         type: string
         required: true
       
       - name: description
-        label: Site Description
+        label: 网站描述
         type: text
       
       - name: logo
-        label: Logo
+        label: 网站Logo
         type: image
 
 # 全局设置

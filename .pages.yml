@@ -37,22 +37,22 @@ components:
         type: string
         description: 在搜索结果中显示的标题（建议 50-60 字符）
         pattern:
-          regex: '^.{1,60}$'
-          message: SEO 标题应在 1-60 个字符之间
+          regex: '^.{0,60}$'
+          message: SEO 标题应在 60 个字符以内
       
       - name: description
         label: SEO 描述
         type: text
         description: 在搜索结果中显示的描述（建议 120-160 字符）
         pattern:
-          regex: '^.{1,160}$'
-          message: SEO 描述应在 1-160 个字符之间
+          regex: '^.{0,160}$'
+          message: SEO 描述应在 160 个字符以内
       
       - name: keywords
         label: 关键词
         type: string
         list:
-          min: 1
+          min: 0
           max: 10
           default: []
         description: 用逗号分隔的关键词列表
@@ -76,7 +76,7 @@ components:
         label: 邮箱
         type: string
         pattern:
-          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          regex: '^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?$'
           message: 请输入有效的邮箱地址（例如：hello@example.com）
       
       - name: avatar
@@ -97,15 +97,15 @@ components:
         label: 电话
         type: string
         pattern:
-          regex: '^1[3-9]\d{9}$'
-          message: 请输入有效的手机号码
+          regex: '^(1[3-9]\d{9})?$'
+          message: 请输入有效的手机号码（可选）
       
       - name: email
         label: 邮箱
         type: string
         pattern:
-          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-          message: 请输入有效的邮箱地址
+          regex: '^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?$'
+          message: 请输入有效的邮箱地址（可选）
       
       - name: wechat
         label: 微信
@@ -184,6 +184,7 @@ content:
         label: 分类
         type: select
         required: true
+        default: other
         options:
           choices:
             - value: tech
@@ -203,20 +204,16 @@ content:
         label: 标签
         type: string
         list:
-          min: 1
+          min: 0
           max: 5
           default: []
           collapsible: false
-        description: 为文章添加 1-5 个标签
+        description: 为文章添加标签（最多5个）
       
       - name: summary
         label: 摘要
         type: text
-        required: true
         description: 文章的简短描述，将显示在列表页
-        pattern:
-          regex: '^.{50,300}$'
-          message: 摘要应在 50-300 个字符之间
       
       - name: cover
         label: 封面图片
@@ -225,8 +222,26 @@ content:
       
       - name: author
         label: 作者
-        component: author
-        required: true
+        type: object
+        default:
+          name: 匿名作者
+        fields:
+          - name: name
+            label: 姓名
+            type: string
+            default: 匿名作者
+          
+          - name: email
+            label: 邮箱
+            type: string
+          
+          - name: avatar
+            label: 头像
+            type: image
+          
+          - name: bio
+            label: 简介
+            type: text
       
       - name: seo
         label: SEO 设置
@@ -248,20 +263,6 @@ content:
         label: 正文内容
         type: rich-text
         required: true
-        options:
-          toolbar:
-            - heading
-            - bold
-            - italic
-            - strike
-            - link
-            - blockquote
-            - code
-            - bullet-list
-            - ordered-list
-            - image
-            - table
-            - horizontal-rule
 
   # 页面集合
   - name: pages
@@ -326,69 +327,9 @@ content:
         label: SEO 设置
         component: seo
       
-      - name: sections
-        label: 页面段落
-        type: object
-        list:
-          min: 1
-          collapsible:
-            collapsed: false
-            summary: "{type} - {title}"
-        fields:
-          - name: type
-            label: 段落类型
-            type: select
-            required: true
-            options:
-              choices:
-                - value: hero
-                  label: 英雄区域
-                - value: content
-                  label: 内容区域
-                - value: gallery
-                  label: 图片展示
-                - value: cta
-                  label: 行动号召
-                - value: testimonial
-                  label: 客户评价
-          
-          - name: title
-            label: 段落标题
-            type: string
-          
-          - name: content
-            label: 段落内容
-            type: rich-text
-          
-          - name: images
-            label: 图片
-            type: image
-            list:
-              max: 10
-          
-          - name: settings
-            label: 段落设置
-            type: object
-            fields:
-              - name: background
-                label: 背景颜色
-                type: string
-                default: '#ffffff'
-              
-              - name: padding
-                label: 内边距
-                type: select
-                default: medium
-                options:
-                  choices:
-                    - value: none
-                      label: 无
-                    - value: small
-                      label: 小
-                    - value: medium
-                      label: 中
-                    - value: large
-                      label: 大
+      - name: body
+        label: 页面内容
+        type: rich-text
 
   # 团队成员集合
   - name: team
@@ -418,6 +359,7 @@ content:
       - name: department
         label: 部门
         type: select
+        default: development
         options:
           choices:
             - value: management
@@ -436,6 +378,7 @@ content:
       - name: joinDate
         label: 入职日期
         type: date
+        default: '{now}'
       
       - name: status
         label: 状态
@@ -481,175 +424,8 @@ content:
             label: 个人网站
             type: string
             pattern:
-              regex: '^https?:\/\/.+'
+              regex: '^(https?:\/\/.+)?$'
               message: 请输入有效的网址（以 http:// 或 https:// 开头）
-
-  # 产品集合
-  - name: products
-    label: 产品
-    type: collection
-    path: content/products
-    format: yaml-frontmatter
-    view:
-      layout: tree
-      node:
-        filename: index.md
-        hideDirs: nodes
-      fields: [name, price, status, category, stock]
-      primary: name
-      sort: [price, name, createdAt]
-    fields:
-      - name: name
-        label: 产品名称
-        type: string
-        required: true
-      
-      - name: sku
-        label: SKU
-        type: string
-        required: true
-        pattern:
-          regex: '^[A-Z0-9-]+$'
-          message: SKU 只能包含大写字母、数字和连字符
-      
-      - name: price
-        label: 价格
-        type: number
-        required: true
-        options:
-          min: 0
-          step: 0.01
-      
-      - name: originalPrice
-        label: 原价
-        type: number
-        options:
-          min: 0
-          step: 0.01
-      
-      - name: category
-        label: 产品分类
-        type: reference
-        required: true
-        options:
-          collection: categories
-          display: name
-          value: id
-      
-      - name: status
-        label: 状态
-        type: select
-        default: draft
-        options:
-          choices:
-            - value: draft
-              label: 草稿
-            - value: active
-              label: 上架
-            - value: inactive
-              label: 下架
-            - value: outofstock
-              label: 缺货
-      
-      - name: stock
-        label: 库存数量
-        type: number
-        default: 0
-        options:
-          min: 0
-      
-      - name: images
-        label: 产品图片
-        type: image
-        list:
-          min: 1
-          max: 10
-        description: 第一张图片将作为主图
-      
-      - name: description
-        label: 产品描述
-        type: rich-text
-        required: true
-      
-      - name: specifications
-        label: 产品规格
-        type: object
-        list:
-          collapsible:
-            collapsed: true
-            summary: "{name}: {value}"
-        fields:
-          - name: name
-            label: 规格名称
-            type: string
-          
-          - name: value
-            label: 规格值
-            type: string
-      
-      - name: tags
-        label: 产品标签
-        type: string
-        list:
-          max: 10
-      
-      - name: createdAt
-        label: 创建时间
-        type: date
-        default: '{now}'
-        hidden: true
-
-  # 分类数据
-  - name: categories
-    label: 分类管理
-    type: collection
-    path: content/categories
-    format: json
-    view:
-      fields: [name, slug, parent, order]
-      primary: name
-      sort: [order, name]
-    fields:
-      - name: id
-        label: ID
-        type: uuid
-        hidden: true
-      
-      - name: name
-        label: 分类名称
-        type: string
-        required: true
-      
-      - name: slug
-        label: URL 别名
-        type: string
-        required: true
-        pattern:
-          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
-          message: URL 别名只能包含小写字母、数字和连字符
-      
-      - name: parent
-        label: 父分类
-        type: reference
-        options:
-          collection: categories
-          display: name
-          value: id
-      
-      - name: description
-        label: 分类描述
-        type: text
-      
-      - name: image
-        label: 分类图片
-        type: image
-      
-      - name: order
-        label: 排序
-        type: number
-        default: 0
-        options:
-          min: 0
 
   # 网站配置（单文件）
   - name: siteConfig
@@ -661,22 +437,31 @@ content:
       - name: site
         label: 网站信息
         type: object
+        default:
+          title: 我的网站
+          description: 欢迎访问我的网站
+          keywords: []
+          language: zh-CN
         fields:
           - name: title
             label: 网站标题
             type: string
+            default: 我的网站
             required: true
           
           - name: description
             label: 网站描述
             type: text
+            default: 欢迎访问我的网站
             required: true
           
           - name: keywords
             label: 默认关键词
             type: string
             list:
+              min: 0
               max: 10
+              default: []
           
           - name: logo
             label: 网站 Logo
@@ -703,11 +488,34 @@ content:
       
       - name: contact
         label: 联系信息
-        component: contact
+        type: object
+        default: {}
+        fields:
+          - name: phone
+            label: 电话
+            type: string
+            description: 可选，留空即可
+          
+          - name: email
+            label: 邮箱
+            type: string
+            pattern:
+              regex: '^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?$'
+              message: 请输入有效的邮箱地址（可选）
+            description: 可选，留空即可
+          
+          - name: wechat
+            label: 微信
+            type: string
+          
+          - name: address
+            label: 地址
+            type: text
       
       - name: social
         label: 社交媒体
         type: object
+        default: {}
         fields:
           - name: wechat
             label: 微信公众号
@@ -736,6 +544,7 @@ content:
       - name: analytics
         label: 分析工具
         type: object
+        default: {}
         fields:
           - name: baiduAnalytics
             label: 百度统计 ID
@@ -745,12 +554,17 @@ content:
             label: Google Analytics ID
             type: string
             pattern:
-              regex: '^(UA-\d{4,10}-\d{1,4}|G-[A-Z0-9]+)$'
-              message: 请输入有效的 Google Analytics ID
+              regex: '^(UA-\d{4,10}-\d{1,4}|G-[A-Z0-9]+)?$'
+              message: 请输入有效的 Google Analytics ID（可选）
       
       - name: features
         label: 功能开关
         type: object
+        default:
+          darkMode: true
+          search: true
+          comments: true
+          newsletter: false
         fields:
           - name: darkMode
             label: 深色模式
@@ -783,8 +597,18 @@ content:
         label: 主菜单
         type: object
         list:
-          min: 1
+          min: 0
           max: 10
+          default:
+            - label: 首页
+              url: /
+              target: _self
+            - label: 博客
+              url: /blog
+              target: _self
+            - label: 关于
+              url: /about
+              target: _self
           collapsible:
             collapsed: false
             summary: "{label} ({url})"
@@ -793,11 +617,13 @@ content:
             label: 菜单标签
             type: string
             required: true
+            default: 新菜单
           
           - name: url
             label: 链接地址
             type: string
             required: true
+            default: /
           
           - name: target
             label: 打开方式
@@ -819,17 +645,21 @@ content:
             label: 子菜单
             type: object
             list:
+              min: 0
               max: 10
+              default: []
             fields:
               - name: label
                 label: 子菜单标签
                 type: string
                 required: true
+                default: 子菜单
               
               - name: url
                 label: 链接地址
                 type: string
                 required: true
+                default: /
               
               - name: description
                 label: 描述
@@ -839,7 +669,21 @@ content:
         label: 页脚菜单
         type: object
         list:
+          min: 0
           max: 4
+          default:
+            - title: 关于我们
+              links:
+                - label: 公司介绍
+                  url: /about
+                - label: 联系我们
+                  url: /contact
+            - title: 服务
+              links:
+                - label: 产品
+                  url: /products
+                - label: 定价
+                  url: /pricing
           collapsible:
             collapsed: true
             summary: "{title}"
@@ -848,23 +692,29 @@ content:
             label: 栏目标题
             type: string
             required: true
+            default: 新栏目
           
           - name: links
             label: 链接列表
             type: object
             list:
-              min: 1
+              min: 0
               max: 10
+              default:
+                - label: 链接
+                  url: /
             fields:
               - name: label
                 label: 链接文本
                 type: string
                 required: true
+                default: 新链接
               
               - name: url
                 label: 链接地址
                 type: string
                 required: true
+                default: /
 
 # 全局设置
 settings:

@@ -10,15 +10,14 @@ media:
 # === 内容定义 ===
 content:
   # ----------------------------------------
-  # 1. 集合：文档 (docs)
+  # 1. 集合：文档 (docs) - (保持不变)
   # ----------------------------------------
   - name: docs
     label: Documentation
     type: collection
     path: src/docs
-    filename: "{primary}.md" # 使用 title 作为文件名的一部分
+    filename: "{primary}.md"
     
-    # CMS 列表视图配置
     view:
       fields: [ title, order ]
       primary: title
@@ -28,12 +27,11 @@ content:
       sort: order
       order: asc
       
-    # 集合中的字段定义
     fields:
       - name: title
         label: Title
         type: string
-        required: true # 标题是必需的
+        required: true
         
       - name: description
         label: Description
@@ -46,17 +44,16 @@ content:
         
       - name: body
         label: Body
-        type: rich-text # 主体内容
+        type: rich-text
 
   # ----------------------------------------
-  # 2. 文件：主页 (homepage)
+  # 2. 文件：主页 (homepage) - 【关键修正区域】
   # ----------------------------------------
   - label: Home page
     path: src/index.njk
     name: homepage
     type: file
     
-    # 文件中的字段定义
     fields:
       - name: layout
         type: string
@@ -67,7 +64,8 @@ content:
       - name: Promotion
         label: Promotion
         type: object
-        default: {} # 添加默认值以防初次创建失败
+        # 【修正】为必需字段 url 提供一个初始空值 ""
+        default: { text: "", url: "" } 
         fields:
           - name: text
             label: Text
@@ -76,15 +74,14 @@ content:
           - name: url
             label: URL
             type: string
-            required: true # URL 是必需的
+            required: true # 保持必需
             
       # 组合字段 2: Features
       - name: features
         label: Features
-        # 注意：这里可能更应该是 array 类型，以便添加多个 Feature
-        # 但根据您的原始配置，这里继续使用 object，但提供了修正
         type: object
-        default: {} # **【关键修正】** 添加空默认值
+        # 【修正】为必需字段 title 提供一个初始空值 ""
+        default: { icon: "", title: "", description: "" } 
         fields:
           - name: icon
             label: Icon
@@ -93,7 +90,7 @@ content:
           - name: title
             label: Title
             type: string
-            required: true # 保持必需，但初次创建时 default: {} 可以绕过
+            required: true # 保持必需
             
           - name: description
             label: Description

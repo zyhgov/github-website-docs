@@ -1,219 +1,263 @@
-# .pages.yml — Pages CMS 配置文件（适用于 Next.js / Hugo / Jekyll 等静态站点）
+# .pages.yml - 完整配置示例
+# Pages CMS 配置文件，采用中文标签和健壮的配置
 
-# ========================
-# 🖼️ 媒体文件配置
-# ========================
+# ----------------------------------------------------------------------
+# 媒体文件配置 (media)
+# 定义文件上传的文件夹，支持更广泛的格式
+# ----------------------------------------------------------------------
 media:
-  - name: images
-    label: 图片库
-    input: src/images
-    output: /images
-    categories: [image]
-    path: images/
-    # 支持所有主流图片格式
-    extensions: [jpg, jpeg, png, webp, avif, svg, gif, bmp, tiff]
+  - name: images # 唯一机器名
+    label: 🖼️ 网站图片 (全格式)
+    input: src/images # 仓库中的图片存储路径
+    output: /images # 网站的公共访问路径
+    # 尽可能支持所有主流图片格式，包括 WebP 和 AVIF
+    extensions: [jpg, jpeg, png, gif, svg, bmp, tif, tiff, webp, avif] 
+    path: images/ # 媒体浏览器默认打开的子路径
+    description: 专用于网站内容图片的上传，支持多种格式。
 
-  - name: documents
-    label: 文档附件
-    input: src/files
-    output: /files
-    categories: [document]
-    # 支持办公文档、PDF、压缩包等
-    extensions: [pdf, doc, docx, xls, xlsx, ppt, pptx, txt, rtf, csv, zip, rar, 7z, tar, gz]
+  - name: documents # 唯一机器名
+    label: 📄 网站文档 (全格式)
+    input: src/files # 仓库中的文档存储路径
+    output: /files # 网站的公共访问路径
+    # 使用类别，以支持所有常见文档类型
+    categories: [document, video, audio, compressed] # 扩展支持文档、视频、音频和压缩文件
+    path: files/
+    description: 用于 PDF、Word、视频等非图片文件的上传。
 
-  - name: assets
-    label: 静态资源
-    input: public/assets
-    output: /assets
-    extensions: [svg, ico, webp, avif, json, xml]
+  - name: assets # 唯一机器名
+    label: 🌐 静态资源 (图标/Logo)
+    input: public/assets # 仓库中的静态资源路径
+    output: /assets # 网站的公共访问路径
+    # 特别针对图标、Logo 等小尺寸资源
+    extensions: [svg, ico, webp, avif, png]
+    description: 用于网站图标、Logo 等特定静态资源的上传。
 
-# ========================
-# 🧩 可重用组件
-# ========================
+# ----------------------------------------------------------------------
+# 可重用的组件定义 (components)
+# ----------------------------------------------------------------------
 components:
-  # SEO 设置组件
+  # SEO组件
   seo:
-    label: SEO 设置
+    label: 🔍 SEO (搜索引擎优化) 设置
     type: object
     fields:
       - name: title
-        label: SEO 标题
-        type: string
-        description: "用于搜索引擎显示的标题（建议 50-60 字符）"
+        label: SEO 标题 (Title Tag)
+        type: string # 修正为 string 以限制一行
+        required: true
+        description: 用于搜索引擎结果页 (SERP) 和浏览器标签页显示的标题。建议长度不超过60字符。
       - name: description
-        label: 页面描述
+        label: 元描述 (Meta Description)
         type: text
-        description: "用于搜索引擎摘要和社交媒体分享（建议 150-160 字符）"
+        description: 页面描述，用于搜索引擎和社交媒体分享。建议长度在120-155字符之间。
       - name: keywords
-        label: 关键词
+        label: 关键词 (Keywords)
         type: string
         list: true
-        description: "SEO 关键词，多个用列表形式"
+        description: 页面相关的关键词列表（对现代SEO影响较小，但可保留）。
       - name: og_image
-        label: 社交分享图
+        label: 社交媒体分享图 (Open Graph Image)
         type: image
-        component: images
+        description: 在社交媒体（如微信、Facebook）分享时显示的图片。建议尺寸 1200x630 像素。
 
   # 作者信息组件
   author:
-    label: 作者信息
+    label: 🧑‍💻 作者信息
     type: object
     fields:
       - name: name
-        label: 姓名
+        label: 姓名/昵称
         type: string
         required: true
       - name: email
-        label: 邮箱
+        label: 邮箱地址
         type: string
         pattern:
           regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
           message: '请输入有效的邮箱地址'
+        required: true
       - name: bio
         label: 个人简介
         type: text
       - name: avatar
-        label: 头像
+        label: 头像图片
         type: image
-        component: images
 
-  # Hero 区块组件
+  # 英雄区域组件
   hero:
-    label: 英雄区域
+    label: ✨ 英雄区域/主视觉区
     type: object
     fields:
       - name: title
         label: 主标题
-        type: string
+        type: string # 修正为 string
         required: true
       - name: subtitle
-        label: 副标题
-        type: string
+        label: 副标题/宣传语
+        type: text
       - name: background
         label: 背景图片
         type: image
-        component: images
       - name: cta_text
-        label: 行动按钮文字
+        label: 行动号召文字 (按钮)
         type: string
       - name: cta_link
-        label: 行动按钮链接
+        label: 行动号召链接 (URL)
         type: string
+        pattern: 
+          regex: '^(http|https|\/).*$' # 允许 http/https 链接或内部路径 /
+          message: '请输入一个有效的 URL (如 /about 或 https://...)'
 
-# ========================
-# 📄 内容类型定义
-# ========================
+# ----------------------------------------------------------------------
+# 内容配置 (content)
+# ----------------------------------------------------------------------
 content:
-  # ———————— 博客文章 ————————
+  # 博客文章集合
   - name: posts
-    label: 博客文章
+    label: 📰 博客文章
     type: collection
     path: src/content/posts
     format: yaml-frontmatter
-    filename: '{year}-{month}-{day}-{slug}.md'
+    # 修正 slug 为变量引用 {slug}，确保与下面的字段匹配
+    filename: '{year}-{month}-{day}-{slug}.md' 
     subfolders: false
+    
+    # 视图配置
+    view:
+      layout: list
+      fields: [title, date, published, author.name, categories]
+      primary: title
+      sort: [date, title]
+      search: [title, description, body, categories] # 搜索范围加入 categories
+      default:
+        search: ''
+        sort: date
+        order: desc
+    
+    # 字段定义
     fields:
       - name: title
-        label: 标题
-        type: string
+        label: 文章标题
+        type: string # 修正为 string 以限制单行
         required: true
-        pattern:
+        pattern: 
           regex: '^.{10,100}$'
-          message: '标题长度应在 10-100 个字符之间'
+          message: '标题长度应在10-100个字符之间'
+      
       - name: slug
-        label: URL 别名
+        label: URL 别名 (Slug)
         type: string
         required: true
-        pattern:
+        pattern: 
           regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
-          message: '只能使用小写字母、数字和连字符（如 my-post）'
+          message: '只能使用小写字母、数字和连字符 (例如: my-new-post)'
+      
       - name: date
         label: 发布日期
         type: date
         required: true
-        default: '{{now}}'
+        default: '{{now}}' # 修正为 Pages CMS 支持的 {{now}} 占位符
+      
       - name: updated
         label: 更新日期
         type: date
+      
       - name: published
-        label: 已发布
+        label: 发布状态
         type: boolean
         default: false
+      
       - name: featured
-        label: 精选文章
+        label: 精选文章 (首页/特殊展示)
         type: boolean
         default: false
+      
       - name: categories
-        label: 分类
+        label: 文章分类
         type: string
         list:
           min: 1
           max: 3
+          collapsible: false
         options:
-          suggestions: [技术, 设计, 产品, 市场, 运营, 生活]
+          suggestions: [技术开发, 产品设计, 市场运营, 行业新闻, 生活随笔] # 优化中文提示
+      
       - name: tags
-        label: 标签
+        label: 文章标签 (Keywords)
         type: string
         list: true
         options:
-          suggestions: [JavaScript, React, Vue, CSS, 性能优化, 用户体验]
-      - component: seo
+          suggestions: [JavaScript, React, Vue, CSS, 性能优化, 用户体验, SEO]
+      
+      - component: seo # 引用 SEO 组件
+      
       - name: cover
-        label: 封面图
+        label: 封面图片
         type: image
-        component: images
+        options:
+          media: images # 限制从 'images' 媒体文件夹选择
+      
       - name: excerpt
         label: 摘要
         type: text
-        description: "用于列表页展示的简短描述"
+        description: '文章摘要，用于列表页和 SEO 描述。'
+      
       - name: author
-        component: author
+        component: author # 引用作者组件
+      
       - name: body
-        label: 正文
+        label: 正文内容 (Markdown/富文本)
         type: rich-text
         required: true
-    view:
-      layout: list
-      fields: [title, date, published, "author.name", categories]
-      primary: title
-      sort: [date, title]
-      search: [title, excerpt, body]
-      default:
-        sort: date
-        order: desc
 
-  # ———————— 页面（支持树形结构） ————————
+  # 页面集合 (支持嵌套路径)
   - name: pages
-    label: 页面
+    label: 📄 网站页面 (Page)
     type: collection
     path: src/content/pages
     format: yaml-frontmatter
     filename: '{slug}.md'
+    
+    view:
+      layout: tree # 启用树状视图，适合层级页面
+      node:
+        filename: index.md # 允许文件夹内有 index.md 作为父节点内容
+        hideDirs: nodes
+      fields: [title, path, published]
+      primary: title
+      sort: [title]
+    
     fields:
       - name: title
         label: 页面标题
         type: string
         required: true
+      
       - name: path
-        label: 页面路径
+        label: 页面路径 (URL)
         type: string
         required: true
-        pattern:
+        pattern: 
           regex: '^\/[a-z0-9\/-]*$'
-          message: '路径必须以 / 开头，仅允许小写字母、数字、连字符和斜杠'
+          message: '路径必须以斜杠开头，只能包含小写字母、数字、连字符和斜杠'
+        description: '例如：/about, /products/detail, 或根路径 /'
+      
       - name: published
-        label: 已发布
+        label: 发布状态 (是否可见)
         type: boolean
         default: true
+      
       - component: seo
+      
       - name: hero
         component: hero
+      
       - name: sections
-        label: 内容区块
+        label: 灵活内容区块
         type: object
         list:
           collapsible:
-            collapsed: false
+            collapsed: true # 默认折叠，节省空间
             summary: "{type} - {title}"
         fields:
           - name: type
@@ -222,22 +266,28 @@ content:
             required: true
             options:
               values:
-                text: 文本区块
-                image: 图片区块
-                cards: 卡片区块
+                text: 文本内容
+                image: 单图展示
+                cards: 卡片列表
                 cta: 行动号召
+                testimonial: 用户评价
+          
           - name: title
             label: 区块标题
             type: string
+          
           - name: content
-            label: 内容
+            label: 内容详情
             type: rich-text
+          
           - name: image
-            label: 图片
+            label: 配图
             type: image
-            component: images
+            options:
+              media: images
+          
           - name: buttons
-            label: 按钮
+            label: 按钮列表
             type: object
             list: true
             fields:
@@ -247,141 +297,171 @@ content:
               - name: link
                 label: 链接
                 type: string
+                pattern: 
+                  regex: '^(http|https|\/).*$'
+                  message: '请输入一个有效的 URL'
+      
       - name: body
-        label: 页面正文
+        label: 页面主体内容 (作为默认内容)
         type: rich-text
-    view:
-      layout: tree
-      node:
-        filename: index.md
-        hideDirs: nodes
-      fields: [title, path, published]
-      primary: title
-      sort: [title]
 
-  # ———————— 产品 ————————
+  # 产品集合 (电商/列表)
   - name: products
-    label: 产品
+    label: 🛍️ 产品列表
     type: collection
     path: src/content/products
     format: yaml-frontmatter
+    filename: '{slug}.md' # 假设文件名基于 slug
+    
+    view:
+      fields: [name, price, category, featured, published]
+      primary: name
+      sort: [price, name]
+      search: [name, description, features, category] # 增加 category 搜索
+      default:
+        sort: name
+        order: asc
+    
     fields:
       - name: name
         label: 产品名称
         type: string
         required: true
+      
       - name: slug
-        label: URL 别名
+        label: URL 别名 (Slug)
         type: string
         required: true
+        pattern: 
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: '只能使用小写字母、数字和连字符'
+      
       - name: description
         label: 产品描述
         type: text
         required: true
+      
       - name: price
-        label: 价格
+        label: 售价 (RMB)
         type: number
         required: true
+      
       - name: compare_price
-        label: 原价
+        label: 原价/划线价 (RMB)
         type: number
+      
       - name: category
-        label: 分类
+        label: 产品分类
         type: select
         required: true
         options:
-          values:
-            electronics: 电子产品
-            clothing: 服装
-            books: 图书
-            home: 家居用品
+          values: # 使用键值对，键用于代码，值用于 CMS 显示
+            electronics: 📱 电子产品
+            clothing: 👕 服装配饰
+            books: 📚 图书音像
+            home: 🛋️ 家居用品
+      
       - name: featured
-        label: 推荐
+        label: 推荐产品 (首页展示)
         type: boolean
         default: false
+      
       - name: published
-        label: 上架
+        label: 上架状态 (是否在售)
         type: boolean
         default: true
+      
       - name: images
         label: 产品图片
         type: image
-        component: images
         list:
           min: 1
           max: 5
+          collapsible: true
+        options:
+          media: images # 限制从 'images' 媒体文件夹选择
+      
       - name: features
-        label: 特性
+        label: 产品特性/卖点
         type: string
         list: true
+        description: 产品的核心卖点，每行一个。
+      
       - name: specifications
         label: 规格参数
         type: object
         list:
-          collapsible: true
+          collapsible:
+            collapsed: true
+            summary: "{key}: {value}" # 列表概览显示参数名和值
         fields:
           - name: key
             label: 参数名
             type: string
+            required: true
           - name: value
             label: 参数值
             type: string
+            required: true
+      
       - component: seo
-    view:
-      fields: [name, price, category, featured, published]
-      primary: name
-      sort: [price, name]
-      search: [name, description, features]
-      default:
-        sort: name
-        order: asc
 
-  # ———————— 网站全局配置 ————————
+  # 网站配置（单文件）
   - name: site_config
-    label: 网站配置
+    label: ⚙️ 全局配置
     type: file
     path: src/data/site.yaml
-    format: yaml
+    format: yaml # 修正：确保格式正确 (可以是 yaml, json, toml 等)
+    
     fields:
       - name: site
-        label: 网站信息
+        label: 网站基础信息
         type: object
         fields:
           - name: title
-            label: 网站标题
+            label: 网站标题 (全站通用)
             type: string
             required: true
           - name: description
-            label: 网站描述
+            label: 网站描述 (全站通用)
             type: text
           - name: logo
-            label: Logo
+            label: 网站 Logo
             type: image
-            component: images
+            options:
+              media: assets # 限制从 'assets' 媒体文件夹选择
           - name: favicon
-            label: 网站图标
+            label: 网站图标 (Favicon)
             type: image
-            component: assets
+            options:
+              media: assets
+      
       - name: social
-        label: 社交媒体
+        label: 社交媒体链接
         type: object
-        list: true
+        list:
+          collapsible: true
+          summary: "{platform}"
         fields:
           - name: platform
             label: 平台
             type: select
+            required: true
             options:
               values:
+                wechat: 微信
+                weibo: 微博
                 twitter: Twitter
                 facebook: Facebook
-                instagram: Instagram
                 linkedin: LinkedIn
                 github: GitHub
           - name: url
-            label: 链接
+            label: 链接地址 (URL)
             type: string
+            required: true
+      
       - name: contact
-        label: 联系方式
+        label: 联系信息
         type: object
         fields:
           - name: email
@@ -394,44 +474,54 @@ content:
             label: 地址
             type: text
 
-  # ———————— 导航菜单 ————————
+  # 导航菜单配置（单文件）
   - name: navigation
-    label: 导航菜单
+    label: 🗺️ 导航菜单
     type: file
     path: src/data/navigation.yaml
-    format: yaml
+    format: yaml # 修正：确保格式正确
+    
     fields:
       - name: header
-        label: 顶部导航
+        label: 顶部主导航
         type: object
-        list: true
+        list:
+          collapsible: true
+          summary: "{label}"
         fields:
           - name: label
             label: 菜单文字
             type: string
             required: true
           - name: url
-            label: 链接
+            label: 链接地址
             type: string
             required: true
           - name: children
-            label: 子菜单
+            label: 子菜单/下拉菜单
             type: object
-            list: true
+            list:
+              collapsible: false
+              summary: "{label}"
             fields:
               - name: label
                 label: 子菜单文字
                 type: string
+                required: true
               - name: url
                 label: 子菜单链接
                 type: string
+                required: true
+      
       - name: footer
-        label: 底部导航
+        label: 底部导航 (多列)
         type: object
-        list: true
+        list:
+          collapsible: true
+          summary: "{section}"
         fields:
           - name: section
-            label: 区块标题
+            label: 区块标题 (例如: 关于我们)
             type: string
           - name: links
             label: 链接列表
@@ -445,10 +535,10 @@ content:
                 label: 链接地址
                 type: string
 
-# ========================
-# ⚙️ 全局设置
-# ========================
+# ----------------------------------------------------------------------
+# 全局设置 (settings)
+# ----------------------------------------------------------------------
 settings:
-  hide: false
+  hide: false # 是否在 CMS 界面显示“设置”入口
   content:
-    merge: true  # 保存时合并字段，避免覆盖未配置的 YAML 内容
+    merge: true # 启用内容合并：只更新表单提交的字段，保留文件中未在配置中定义的其他字段。

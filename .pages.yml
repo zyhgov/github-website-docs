@@ -1,162 +1,668 @@
-# .pages.yml - 修正完整版
+# .pages.yml - 中文完整版
 # Pages CMS 配置文件
 
 # 媒体文件配置
 media:
   - name: images
-    label: Images
+    label: 图片库
     input: images
     output: /images
     categories: [image]
+    path: images/
+    extensions: [jpg, jpeg, png, webp, gif, svg]
   - name: documents
-    label: Documents
+    label: 文档库
     input: files
     output: /files
     categories: [document]
+    extensions: [pdf, doc, docx, ppt, pptx, xlsx, txt]
+  - name: assets
+    label: 资源文件
+    input: assets
+    output: /assets
+    extensions: [ico, woff, woff2, ttf, eot, json]
 
 # 可重用的组件定义
 components:
   # SEO组件
   seo:
-    label: SEO Settings
+    label: SEO设置
     type: object
     fields:
       - name: meta_title
-        label: Meta Title
+        label:  meta标题
         type: text
-        description: Title for search engines
+        description: 用于搜索引擎显示的标题
       - name: meta_description
-        label: Meta Description
+        label: meta描述
         type: text
-        description: Description for search engines and social sharing
+        description: 用于搜索引擎和社交媒体分享的描述
+      - name: meta_keywords
+        label: 关键词
+        type: string
+        list: true
+        description: 用逗号分隔的关键词列表
       - name: og_image
-        label: Social Media Image
+        label: 社交媒体图片
         type: image
-        description: Image displayed when sharing on social media
+        description: 在社交媒体分享时显示的图片
+      - name: canonical_url
+        label: 规范链接
+        type: string
+        description: 主要的URL地址，用于避免重复内容
 
   # 作者信息组件
   author:
-    label: Author Information
+    label: 作者信息
     type: object
     fields:
       - name: name
-        label: Name
+        label: 姓名
         type: string
         required: true
       - name: email
-        label: Email
+        label: 邮箱
         type: string
+        pattern:
+          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          message: '请输入有效的邮箱地址'
+      - name: bio
+        label: 个人简介
+        type: text
       - name: avatar
-        label: Avatar
+        label: 头像
         type: image
+      - name: social
+        label: 社交媒体
+        type: object
+        fields:
+          - name: twitter
+            label: Twitter
+            type: string
+          - name: github
+            label: GitHub
+            type: string
+          - name: linkedin
+            label: LinkedIn
+            type: string
+
+  # 英雄区域组件
+  hero_section:
+    label: 英雄区域
+    type: object
+    fields:
+      - name: title
+        label: 主标题
+        type: text
+        required: true
+      - name: subtitle
+        label: 副标题
+        type: text
+      - name: background_image
+        label: 背景图片
+        type: image
+      - name: cta_button
+        label: 行动号召按钮
+        type: object
+        fields:
+          - name: text
+            label: 按钮文字
+            type: string
+          - name: link
+            label: 按钮链接
+            type: string
+          - name: style
+            label: 按钮样式
+            type: select
+            options:
+              values:
+                primary: 主要按钮
+                secondary: 次要按钮
+                outline: 线框按钮
+
+  # 联系信息组件
+  contact_info:
+    label: 联系信息
+    type: object
+    fields:
+      - name: phone
+        label: 电话
+        type: string
+      - name: email
+        label: 邮箱
+        type: string
+      - name: address
+        label: 地址
+        type: text
+      - name: business_hours
+        label: 营业时间
+        type: text
 
 # 内容配置
 content:
-  # 博客文章集合 - 简化版本确保工作
+  # 博客文章集合
   - name: posts
-    label: Blog Posts
+    label: 博客文章
     type: collection
     path: content/posts
     format: yaml-frontmatter
-    filename: '{slug}.md'
+    filename: '{year}-{month}-{day}-{slug}.md'
     
     # 视图配置
     view:
       layout: list
-      fields: [title, date, published]
+      fields: [title, date, published, author.name, categories, featured]
       primary: title
-      sort: [date]
+      sort: [date, title]
+      search: [title, excerpt, body, author.name]
       default:
+        search: ''
         sort: date
         order: desc
     
-    # 字段定义 - 确保所有必需字段都有
+    # 字段定义
     fields:
       - name: title
-        label: Title
+        label: 文章标题
         type: text
         required: true
+        pattern: 
+          regex: '^.{5,200}$'
+          message: '标题长度应在5-200个字符之间'
       
       - name: slug
-        label: Slug
+        label: URL别名
         type: string
         required: true
+        pattern: 
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: '只能使用小写字母、数字和连字符'
       
       - name: date
-        label: Date
+        label: 发布日期
         type: date
         required: true
         default: 'now'
       
+      - name: updated
+        label: 更新日期
+        type: date
+        description: '文章最后更新日期'
+      
       - name: published
-        label: Published
+        label: 发布状态
         type: boolean
         default: false
+        description: '勾选后文章才会在网站上显示'
+      
+      - name: featured
+        label: 精选文章
+        type: boolean
+        default: false
+        description: '是否在首页或推荐位置显示'
+      
+      - name: categories
+        label: 文章分类
+        type: string
+        list:
+          min: 1
+          max: 3
+          collapsible: false
+        options:
+          suggestions: [技术, 设计, 产品, 市场, 运营, 生活, 教程, 新闻]
+        description: '选择1-3个分类'
+      
+      - name: tags
+        label: 文章标签
+        type: string
+        list: true
+        options:
+          suggestions: [JavaScript, React, Vue, CSS, 性能优化, 用户体验, 前端, 后端, 移动端]
+        description: '添加相关标签，便于搜索'
+      
+      - component: seo
+      
+      - name: cover_image
+        label: 封面图片
+        type: image
+        description: '文章列表和详情页显示的封面图'
       
       - name: excerpt
-        label: Excerpt
+        label: 文章摘要
         type: text
-        description: 'Short description for listing pages'
+        description: '简短的文章摘要，用于列表页显示'
+      
+      - component: author
       
       - name: body
-        label: Content
+        label: 正文内容
         type: rich-text
         required: true
+        description: '文章的主要内容'
 
   # 页面集合
   - name: pages
-    label: Pages
+    label: 页面管理
     type: collection
     path: content/pages
     format: yaml-frontmatter
     filename: '{slug}.md'
     
     view:
-      layout: list
-      fields: [title, path, published]
+      layout: tree
+      node:
+        filename: index.md
+        hideDirs: nodes
+      fields: [title, slug, published, menu_order]
       primary: title
-      sort: [title]
+      sort: [menu_order, title]
     
     fields:
       - name: title
-        label: Page Title
+        label: 页面标题
         type: text
         required: true
       
       - name: slug
-        label: Slug
+        label: URL别名
         type: string
         required: true
       
       - name: published
-        label: Published
+        label: 发布状态
         type: boolean
         default: true
       
+      - name: menu_order
+        label: 菜单排序
+        type: number
+        default: 0
+        description: '数字越小排序越靠前'
+      
+      - name: show_in_menu
+        label: 在菜单中显示
+        type: boolean
+        default: true
+      
+      - component: seo
+      
+      - name: hero
+        component: hero_section
+      
+      - name: sections
+        label: 内容区块
+        type: object
+        list:
+          collapsible:
+            collapsed: false
+            summary: "{type} - {title}"
+        fields:
+          - name: type
+            label: 区块类型
+            type: select
+            required: true
+            options:
+              values:
+                text: 文本区块
+                image: 图片区块
+                cards: 卡片区块
+                cta: 行动号召
+                gallery: 图片画廊
+                form: 表单区块
+          
+          - name: title
+            label: 区块标题
+            type: string
+          
+          - name: content
+            label: 内容
+            type: rich-text
+          
+          - name: image
+            label: 图片
+            type: image
+          
+          - name: images
+            label: 图片列表
+            type: image
+            list: true
+          
+          - name: buttons
+            label: 按钮
+            type: object
+            list: true
+            fields:
+              - name: text
+                label: 按钮文字
+                type: string
+                required: true
+              - name: link
+                label: 链接地址
+                type: string
+                required: true
+              - name: style
+                label: 按钮样式
+                type: select
+                options:
+                  values:
+                    primary: 主要按钮
+                    secondary: 次要按钮
+                    outline: 线框按钮
+      
       - name: body
-        label: Page Content
+        label: 页面内容
         type: rich-text
+        description: '页面的主要内容'
+
+  # 产品集合
+  - name: products
+    label: 产品管理
+    type: collection
+    path: content/products
+    format: yaml-frontmatter
+    filename: '{slug}.md'
+    
+    view:
+      layout: list
+      fields: [name, price, category, featured, published, stock_status]
+      primary: name
+      sort: [price, name]
+      search: [name, description, sku]
+      default:
+        sort: name
+        order: asc
+    
+    fields:
+      - name: name
+        label: 产品名称
+        type: text
+        required: true
+      
+      - name: slug
+        label: URL别名
+        type: string
+        required: true
+      
+      - name: sku
+        label: 产品SKU
+        type: string
+        required: true
+        description: '产品唯一标识码'
+      
+      - name: description
+        label: 产品描述
+        type: text
+        required: true
+      
+      - name: price
+        label: 价格
+        type: number
+        required: true
+        description: '产品售价'
+      
+      - name: original_price
+        label: 原价
+        type: number
+        description: '划线价，用于显示折扣'
+      
+      - name: category
+        label: 产品分类
+        type: select
+        required: true
+        options:
+          values:
+            electronics: 电子产品
+            clothing: 服装配饰
+            books: 图书文具
+            home: 家居用品
+            digital: 数码产品
+            sports: 运动户外
+      
+      - name: featured
+        label: 推荐产品
+        type: boolean
+        default: false
+      
+      - name: published
+        label: 上架状态
+        type: boolean
+        default: true
+      
+      - name: stock_status
+        label: 库存状态
+        type: select
+        options:
+          values:
+            in_stock: 有货
+            out_of_stock: 缺货
+            pre_order: 预售
+      
+      - name: images
+        label: 产品图片
+        type: image
+        list:
+          min: 1
+          max: 10
+        description: '上传产品图片，第一张为主图'
+      
+      - name: features
+        label: 产品特性
+        type: string
+        list: true
+        description: '产品的关键特性列表'
+      
+      - name: specifications
+        label: 规格参数
+        type: object
+        list:
+          collapsible: true
+          summary: "{key}: {value}"
+        fields:
+          - name: key
+            label: 参数名称
+            type: string
+            required: true
+          - name: value
+            label: 参数值
+            type: string
+            required: true
+          - name: unit
+            label: 单位
+            type: string
+      
+      - component: seo
+
+  # 导航菜单配置
+  - name: navigation
+    label: 导航菜单
+    type: file
+    path: data/navigation.yaml
+    format: yaml
+    
+    fields:
+      - name: header
+        label: 顶部导航
+        type: object
+        list: true
+        fields:
+          - name: label
+            label: 菜单文字
+            type: string
+            required: true
+          - name: url
+            label: 链接地址
+            type: string
+            required: true
+          - name: target
+            label: 打开方式
+            type: select
+            options:
+              values:
+                _self: 当前窗口
+                _blank: 新窗口
+          - name: children
+            label: 子菜单
+            type: object
+            list: true
+            fields:
+              - name: label
+                label: 子菜单文字
+                type: string
+                required: true
+              - name: url
+                label: 子菜单链接
+                type: string
+                required: true
+      
+      - name: footer
+        label: 底部导航
+        type: object
+        list: true
+        fields:
+          - name: title
+            label: 区块标题
+            type: string
+            required: true
+          - name: links
+            label: 链接列表
+            type: object
+            list: true
+            fields:
+              - name: label
+                label: 链接文字
+                type: string
+                required: true
+              - name: url
+                label: 链接地址
+                type: string
+                required: true
 
   # 网站配置
-  - name: site
-    label: Site Configuration
+  - name: site_config
+    label: 网站配置
     type: file
     path: data/site.yaml
     format: yaml
     
     fields:
-      - name: title
-        label: Site Title
-        type: string
-        required: true
+      - name: site
+        label: 网站信息
+        type: object
+        fields:
+          - name: title
+            label: 网站标题
+            type: string
+            required: true
+          - name: description
+            label: 网站描述
+            type: text
+            required: true
+          - name: logo
+            label: 网站Logo
+            type: image
+          - name: favicon
+            label: 网站图标
+            type: image
+          - name: language
+            label: 网站语言
+            type: string
+            default: 'zh-CN'
       
-      - name: description
-        label: Site Description
-        type: text
+      - name: contact
+        label: 联系信息
+        type: object
+        fields:
+          - name: company
+            label: 公司名称
+            type: string
+          - name: address
+            label: 公司地址
+            type: text
+          - name: phone
+            label: 联系电话
+            type: string
+          - name: email
+            label: 联系邮箱
+            type: string
+          - name: wechat
+            label: 微信公众号
+            type: string
       
-      - name: logo
-        label: Logo
-        type: image
+      - name: social
+        label: 社交媒体
+        type: object
+        list: true
+        fields:
+          - name: platform
+            label: 平台名称
+            type: select
+            required: true
+            options:
+              values:
+                weibo: 微博
+                wechat: 微信
+                douyin: 抖音
+                bilibili: B站
+                zhihu: 知乎
+                github: GitHub
+                twitter: Twitter
+                linkedin: LinkedIn
+          - name: url
+            label: 主页链接
+            type: string
+            required: true
+          - name: handle
+            label: 账号名称
+            type: string
+
+  # 全局设置
+  - name: settings
+    label: 全局设置
+    type: file
+    path: data/settings.yaml
+    format: yaml
+    
+    fields:
+      - name: analytics
+        label: 网站统计
+        type: object
+        fields:
+          - name: google_analytics
+            label: Google Analytics ID
+            type: string
+          - name: baidu_tongji
+            label: 百度统计ID
+            type: string
+      
+      - name: features
+        label: 功能开关
+        type: object
+        fields:
+          - name: dark_mode
+            label: 暗色模式
+            type: boolean
+            default: true
+          - name: comments
+            label: 评论功能
+            type: boolean
+            default: true
+          - name: search
+            label: 搜索功能
+            type: boolean
+            default: true
+      
+      - name: security
+        label: 安全设置
+        type: object
+        fields:
+          - name: https_redirect
+            label: HTTPS重定向
+            type: boolean
+            default: true
+          - name: csp_enabled
+            label: 内容安全策略
+            type: boolean
+            default: true
 
 # 全局设置
 settings:

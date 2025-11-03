@@ -1,28 +1,33 @@
-# ==========================================================
-#  Pages CMS 全中文配置文件
-#  适用：Jekyll / Hugo / Next.js / VuePress ……
-# ==========================================================
+# Pages CMS 配置文件
+# 适用于中文内容网站/博客
 
-# 1. 媒体资源（支持多目录、多后缀、多类别）
+# 媒体配置 - 支持多种媒体类型和文件夹
 media:
   - name: images
-    label: 图片库
-    input: assets/images           # 仓库内路径
-    output: /images                # 站点最终访问路径
-    categories: [image]            # 只允许图片
-  - name: docs
-    label: 文档库
-    input: assets/docs
-    output: /docs
-    categories: [document]         # pdf/doc/xls/txt …
+    label: 图片
+    input: public/images
+    output: /images
+    path: uploads
+    extensions: [jpg, jpeg, png, gif, svg, webp, ico]
+    categories: [image]
+  
+  - name: documents
+    label: 文档
+    input: public/documents
+    output: /documents
+    extensions: [pdf, doc, docx, xls, xlsx, ppt, pptx]
+    categories: [document]
+  
   - name: videos
-    label: 视频库
-    input: assets/videos
+    label: 视频
+    input: public/videos
     output: /videos
+    extensions: [mp4, avi, mov, webm]
     categories: [video]
 
-# 2. 可复用「组件」定义（供字段引用）
+# 可复用组件定义
 components:
+  # SEO 元数据组件
   seo:
     label: SEO 设置
     type: object
@@ -30,216 +35,839 @@ components:
       - name: title
         label: SEO 标题
         type: string
+        description: 在搜索结果中显示的标题（建议 50-60 字符）
         pattern:
-          regex: '^.{5,60}$'
-          message: 'SEO 标题 5-60 个字符'
+          regex: '^.{1,60}$'
+          message: SEO 标题应在 1-60 个字符之间
+      
       - name: description
         label: SEO 描述
         type: text
+        description: 在搜索结果中显示的描述（建议 120-160 字符）
         pattern:
-          regex: '^.{20,160}$'
-          message: 'SEO 描述 20-160 个字符'
+          regex: '^.{1,160}$'
+          message: SEO 描述应在 1-160 个字符之间
+      
       - name: keywords
         label: 关键词
         type: string
-        list: true
         list:
-          max: 5
-          summary: '关键词 {index}: {value}'
+          min: 1
+          max: 10
+          default: []
+        description: 用逗号分隔的关键词列表
+      
+      - name: ogImage
+        label: 社交媒体图片
+        type: image
+        description: 在社交媒体分享时显示的图片（建议尺寸：1200x630px）
 
-  hero:
-    label: Hero 横幅
+  # 作者信息组件
+  author:
+    label: 作者信息
     type: object
     fields:
-      - name: headline
-        label: 主标题
-        type: text
-        required: true
-      - name: subline
-        label: 副标题
-        type: text
-      - name: cover
-        label: 封面图
-        type: image
-        required: true
-      - name: alt
-        label: 替代文本
-        type: string
-
-# 3. 内容集合 & 单文件
-content:
-  # 3.1 博客文章
-  - name: posts
-    label: 博客文章
-    type: collection
-    path: _posts
-    format: yaml-frontmatter
-    filename: '{year}-{month}-{day}-{slug}.md'
-    subfolders: false
-    view:
-      layout: list
-      primary: title
-      fields: [title, date, author, published, tags]
-      sort: [date, title]
-      default:
-        sort: date
-        order: desc
-      search: [title, description, tags]
-    fields:
-      - name: title
-        label: 文章标题
-        type: string
-        required: true
-      - name: slug
-        label: URL _slug
-        type: string
-        pattern: '^[a-z0-9-]+$'
-        description: '小写、数字、短横线，如: my-first-post'
-      - name: date
-        label: 发布日期
-        type: date
-        required: true
-        default: 'now'
-      - name: author
-        label: 作者
-        type: reference
-        collection: authors
-        required: true
-      - name: tags
-        label: 标签
-        type: string
-        list:
-          max: 5
-          collapsible: true
-      - name: cover
-        label: 封面图
-        type: image
-      - name: description
-        label: 摘要
-        type: text
-        pattern: '^.{30,200}$'
-        message: '摘要 30-200 字'
-      - name: seo
-        label: SEO
-        component: seo
-      - name: body
-        label: 正文
-        type: rich-text
-        required: true
-
-  # 3.2 作者
-  - name: authors
-    label: 作者管理
-    type: collection
-    path: _data/authors
-    format: json
-    filename: '{slug}.json'
-    view:
-      primary: name
-      fields: [name, avatar, email]
-      sort: [name]
-    fields:
-      - name: slug
-        label: 英文缩写
-        type: string
-        pattern: '^[a-z0--]+$'
-        required: true
       - name: name
         label: 姓名
         type: string
         required: true
-      - name: avatar
-        label: 头像
-        type: image
+      
       - name: email
         label: 邮箱
         type: string
         pattern:
-          regex: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
-          message: '请输入合法邮箱'
+          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          message: 请输入有效的邮箱地址（例如：hello@example.com）
+      
+      - name: avatar
+        label: 头像
+        type: image
+      
       - name: bio
         label: 简介
         type: text
+        description: 作者的简短介绍
 
-  # 3.3 单页（关于 / 联系 / 自定义）
-  - name: pages
-    label: 单页管理
+  # 联系方式组件
+  contact:
+    label: 联系方式
+    type: object
+    fields:
+      - name: phone
+        label: 电话
+        type: string
+        pattern:
+          regex: '^1[3-9]\d{9}$'
+          message: 请输入有效的手机号码
+      
+      - name: email
+        label: 邮箱
+        type: string
+        pattern:
+          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          message: 请输入有效的邮箱地址
+      
+      - name: wechat
+        label: 微信
+        type: string
+      
+      - name: address
+        label: 地址
+        type: text
+
+# 内容配置
+content:
+  # 博客文章集合
+  - name: posts
+    label: 博客文章
     type: collection
-    path: _pages
+    path: content/posts
     format: yaml-frontmatter
-    filename: '{slug}.md'
+    filename: '{year}-{month}-{day}-{primary}'
+    exclude: [README.md, .DS_Store]
+    subfolders: true
     view:
+      layout: list
+      fields: [title, date, status, category, author.name, tags]
       primary: title
-      fields: [title, updated]
-      sort: [updated]
+      sort: [date, title, status]
+      search: [title, summary, tags, category, author.name]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+        description: 文章的主标题
+      
+      - name: slug
+        label: URL 别名
+        type: string
+        pattern:
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: URL 别名只能包含小写字母、数字和连字符
+        description: 用于生成文章 URL 的唯一标识符
+      
+      - name: date
+        label: 发布日期
+        type: date
+        required: true
+        default: '{now}'
+      
+      - name: updated
+        label: 更新日期
+        type: date
+      
+      - name: status
+        label: 状态
+        type: select
+        required: true
+        default: draft
+        options:
+          choices:
+            - value: draft
+              label: 草稿
+            - value: published
+              label: 已发布
+            - value: archived
+              label: 已归档
+      
+      - name: featured
+        label: 置顶文章
+        type: boolean
+        default: false
+        description: 是否在首页置顶显示
+      
+      - name: category
+        label: 分类
+        type: select
+        required: true
+        options:
+          choices:
+            - value: tech
+              label: 技术
+            - value: life
+              label: 生活
+            - value: travel
+              label: 旅行
+            - value: food
+              label: 美食
+            - value: reading
+              label: 阅读
+            - value: other
+              label: 其他
+      
+      - name: tags
+        label: 标签
+        type: string
+        list:
+          min: 1
+          max: 5
+          default: []
+          collapsible: false
+        description: 为文章添加 1-5 个标签
+      
+      - name: summary
+        label: 摘要
+        type: text
+        required: true
+        description: 文章的简短描述，将显示在列表页
+        pattern:
+          regex: '^.{50,300}$'
+          message: 摘要应在 50-300 个字符之间
+      
+      - name: cover
+        label: 封面图片
+        type: image
+        description: 文章的封面图片（建议尺寸：1920x1080px）
+      
+      - name: author
+        label: 作者
+        component: author
+        required: true
+      
+      - name: seo
+        label: SEO 设置
+        component: seo
+      
+      - name: toc
+        label: 显示目录
+        type: boolean
+        default: true
+        description: 是否显示文章目录
+      
+      - name: comments
+        label: 允许评论
+        type: boolean
+        default: true
+        description: 是否允许读者评论
+      
+      - name: body
+        label: 正文内容
+        type: rich-text
+        required: true
+        options:
+          toolbar:
+            - heading
+            - bold
+            - italic
+            - strike
+            - link
+            - blockquote
+            - code
+            - bullet-list
+            - ordered-list
+            - image
+            - table
+            - horizontal-rule
+
+  # 页面集合
+  - name: pages
+    label: 独立页面
+    type: collection
+    path: content/pages
+    format: yaml-frontmatter
+    filename: '{primary}'
+    view:
+      fields: [title, slug, updated, status]
+      primary: title
+      sort: [title, updated]
+      default:
+        sort: updated
+        order: desc
     fields:
       - name: title
         label: 页面标题
         type: string
         required: true
+      
       - name: slug
-        label: 页面路径
+        label: URL 别名
         type: string
-        pattern: '^[a-z0-9-/]+$'
-        description: '例: about 或 company/contact'
+        required: true
+        pattern:
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: URL 别名只能包含小写字母、数字和连字符
+      
+      - name: status
+        label: 状态
+        type: select
+        default: draft
+        options:
+          choices:
+            - value: draft
+              label: 草稿
+            - value: published
+              label: 已发布
+      
       - name: updated
-        label: 更新时间
+        label: 更新日期
         type: date
-        default: 'now'
-      - name: hero
-        label: 顶部横幅
-        component: hero
-      - name: body
-        label: 正文
-        type: rich-text
-        required: true
+        default: '{now}'
+      
+      - name: template
+        label: 页面模板
+        type: select
+        default: default
+        options:
+          choices:
+            - value: default
+              label: 默认模板
+            - value: fullwidth
+              label: 全宽模板
+            - value: sidebar
+              label: 侧边栏模板
+            - value: landing
+              label: 着陆页模板
+      
       - name: seo
-        label: SEO
+        label: SEO 设置
         component: seo
+      
+      - name: sections
+        label: 页面段落
+        type: object
+        list:
+          min: 1
+          collapsible:
+            collapsed: false
+            summary: "{type} - {title}"
+        fields:
+          - name: type
+            label: 段落类型
+            type: select
+            required: true
+            options:
+              choices:
+                - value: hero
+                  label: 英雄区域
+                - value: content
+                  label: 内容区域
+                - value: gallery
+                  label: 图片展示
+                - value: cta
+                  label: 行动号召
+                - value: testimonial
+                  label: 客户评价
+          
+          - name: title
+            label: 段落标题
+            type: string
+          
+          - name: content
+            label: 段落内容
+            type: rich-text
+          
+          - name: images
+            label: 图片
+            type: image
+            list:
+              max: 10
+          
+          - name: settings
+            label: 段落设置
+            type: object
+            fields:
+              - name: background
+                label: 背景颜色
+                type: string
+                default: '#ffffff'
+              
+              - name: padding
+                label: 内边距
+                type: select
+                default: medium
+                options:
+                  choices:
+                    - value: none
+                      label: 无
+                    - value: small
+                      label: 小
+                    - value: medium
+                      label: 中
+                    - value: large
+                      label: 大
 
-  # 3.4 全局配置（单文件）
-  - name: config
-    label: 站点配置
-    type: file
-    path: _data/config.json
-    format: json
+  # 团队成员集合
+  - name: team
+    label: 团队成员
+    type: collection
+    path: content/team
+    format: yaml-frontmatter
+    filename: '{primary}'
+    view:
+      fields: [name, position, department, joinDate, status]
+      primary: name
+      sort: [joinDate, name]
+      default:
+        sort: joinDate
+        order: desc
     fields:
-      - name: title
-        label: 站点标题
+      - name: name
+        label: 姓名
         type: string
         required: true
-      - name: subtitle
-        label: 站点副标题
+      
+      - name: position
+        label: 职位
         type: string
-      - name: logo
-        label: Logo
+        required: true
+      
+      - name: department
+        label: 部门
+        type: select
+        options:
+          choices:
+            - value: management
+              label: 管理层
+            - value: development
+              label: 研发部
+            - value: design
+              label: 设计部
+            - value: marketing
+              label: 市场部
+            - value: sales
+              label: 销售部
+            - value: hr
+              label: 人力资源部
+      
+      - name: joinDate
+        label: 入职日期
+        type: date
+      
+      - name: status
+        label: 状态
+        type: select
+        default: active
+        options:
+          choices:
+            - value: active
+              label: 在职
+            - value: inactive
+              label: 离职
+      
+      - name: avatar
+        label: 头像
         type: image
-      - name: icp
-        label: 备案号
-        type: string
-        pattern: '^ICP-\d{8}-\d$'
-        description: '例: ICP-12345678-1'
+        description: 建议尺寸：400x400px
+      
+      - name: bio
+        label: 个人简介
+        type: text
+      
+      - name: contact
+        label: 联系方式
+        component: contact
+      
       - name: social
         label: 社交媒体
         type: object
-        list: true
-        list:
-          max: 6
-          summary: '{platform}: {url}'
         fields:
-          - name: platform
-            label: 平台
-            type: select
-            options: [微博, 知乎, GitHub, Twitter, 微信, 抖音]
-            required: true
-          - name: url
-            label: 链接
+          - name: github
+            label: GitHub
             type: string
-            pattern: '^https?://.+'
-            required: true
+          
+          - name: linkedin
+            label: LinkedIn
+            type: string
+          
+          - name: twitter
+            label: Twitter
+            type: string
+          
+          - name: website
+            label: 个人网站
+            type: string
+            pattern:
+              regex: '^https?:\/\/.+'
+              message: 请输入有效的网址（以 http:// 或 https:// 开头）
 
-# 4. 全局设置
+  # 产品集合
+  - name: products
+    label: 产品
+    type: collection
+    path: content/products
+    format: yaml-frontmatter
+    view:
+      layout: tree
+      node:
+        filename: index.md
+        hideDirs: nodes
+      fields: [name, price, status, category, stock]
+      primary: name
+      sort: [price, name, createdAt]
+    fields:
+      - name: name
+        label: 产品名称
+        type: string
+        required: true
+      
+      - name: sku
+        label: SKU
+        type: string
+        required: true
+        pattern:
+          regex: '^[A-Z0-9-]+$'
+          message: SKU 只能包含大写字母、数字和连字符
+      
+      - name: price
+        label: 价格
+        type: number
+        required: true
+        options:
+          min: 0
+          step: 0.01
+      
+      - name: originalPrice
+        label: 原价
+        type: number
+        options:
+          min: 0
+          step: 0.01
+      
+      - name: category
+        label: 产品分类
+        type: reference
+        required: true
+        options:
+          collection: categories
+          display: name
+          value: id
+      
+      - name: status
+        label: 状态
+        type: select
+        default: draft
+        options:
+          choices:
+            - value: draft
+              label: 草稿
+            - value: active
+              label: 上架
+            - value: inactive
+              label: 下架
+            - value: outofstock
+              label: 缺货
+      
+      - name: stock
+        label: 库存数量
+        type: number
+        default: 0
+        options:
+          min: 0
+      
+      - name: images
+        label: 产品图片
+        type: image
+        list:
+          min: 1
+          max: 10
+        description: 第一张图片将作为主图
+      
+      - name: description
+        label: 产品描述
+        type: rich-text
+        required: true
+      
+      - name: specifications
+        label: 产品规格
+        type: object
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{name}: {value}"
+        fields:
+          - name: name
+            label: 规格名称
+            type: string
+          
+          - name: value
+            label: 规格值
+            type: string
+      
+      - name: tags
+        label: 产品标签
+        type: string
+        list:
+          max: 10
+      
+      - name: createdAt
+        label: 创建时间
+        type: date
+        default: '{now}'
+        hidden: true
+
+  # 分类数据
+  - name: categories
+    label: 分类管理
+    type: collection
+    path: content/categories
+    format: json
+    view:
+      fields: [name, slug, parent, order]
+      primary: name
+      sort: [order, name]
+    fields:
+      - name: id
+        label: ID
+        type: uuid
+        hidden: true
+      
+      - name: name
+        label: 分类名称
+        type: string
+        required: true
+      
+      - name: slug
+        label: URL 别名
+        type: string
+        required: true
+        pattern:
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: URL 别名只能包含小写字母、数字和连字符
+      
+      - name: parent
+        label: 父分类
+        type: reference
+        options:
+          collection: categories
+          display: name
+          value: id
+      
+      - name: description
+        label: 分类描述
+        type: text
+      
+      - name: image
+        label: 分类图片
+        type: image
+      
+      - name: order
+        label: 排序
+        type: number
+        default: 0
+        options:
+          min: 0
+
+  # 网站配置（单文件）
+  - name: siteConfig
+    label: 网站配置
+    type: file
+    path: content/config/site.yml
+    format: yaml
+    fields:
+      - name: site
+        label: 网站信息
+        type: object
+        fields:
+          - name: title
+            label: 网站标题
+            type: string
+            required: true
+          
+          - name: description
+            label: 网站描述
+            type: text
+            required: true
+          
+          - name: keywords
+            label: 默认关键词
+            type: string
+            list:
+              max: 10
+          
+          - name: logo
+            label: 网站 Logo
+            type: image
+          
+          - name: favicon
+            label: 网站图标
+            type: image
+          
+          - name: language
+            label: 默认语言
+            type: select
+            default: zh-CN
+            options:
+              choices:
+                - value: zh-CN
+                  label: 简体中文
+                - value: zh-TW
+                  label: 繁体中文
+                - value: en-US
+                  label: 英语（美国）
+                - value: ja-JP
+                  label: 日语
+      
+      - name: contact
+        label: 联系信息
+        component: contact
+      
+      - name: social
+        label: 社交媒体
+        type: object
+        fields:
+          - name: wechat
+            label: 微信公众号
+            type: string
+          
+          - name: weibo
+            label: 微博
+            type: string
+          
+          - name: douyin
+            label: 抖音
+            type: string
+          
+          - name: bilibili
+            label: B站
+            type: string
+          
+          - name: github
+            label: GitHub
+            type: string
+          
+          - name: twitter
+            label: Twitter
+            type: string
+      
+      - name: analytics
+        label: 分析工具
+        type: object
+        fields:
+          - name: baiduAnalytics
+            label: 百度统计 ID
+            type: string
+          
+          - name: googleAnalytics
+            label: Google Analytics ID
+            type: string
+            pattern:
+              regex: '^(UA-\d{4,10}-\d{1,4}|G-[A-Z0-9]+)$'
+              message: 请输入有效的 Google Analytics ID
+      
+      - name: features
+        label: 功能开关
+        type: object
+        fields:
+          - name: darkMode
+            label: 深色模式
+            type: boolean
+            default: true
+          
+          - name: search
+            label: 站内搜索
+            type: boolean
+            default: true
+          
+          - name: comments
+            label: 评论系统
+            type: boolean
+            default: true
+          
+          - name: newsletter
+            label: 邮件订阅
+            type: boolean
+            default: false
+
+  # 导航菜单（单文件）
+  - name: navigation
+    label: 导航菜单
+    type: file
+    path: content/config/navigation.yml
+    format: yaml
+    fields:
+      - name: mainMenu
+        label: 主菜单
+        type: object
+        list:
+          min: 1
+          max: 10
+          collapsible:
+            collapsed: false
+            summary: "{label} ({url})"
+        fields:
+          - name: label
+            label: 菜单标签
+            type: string
+            required: true
+          
+          - name: url
+            label: 链接地址
+            type: string
+            required: true
+          
+          - name: target
+            label: 打开方式
+            type: select
+            default: _self
+            options:
+              choices:
+                - value: _self
+                  label: 当前窗口
+                - value: _blank
+                  label: 新窗口
+          
+          - name: icon
+            label: 图标
+            type: string
+            description: 图标类名或 SVG 路径
+          
+          - name: children
+            label: 子菜单
+            type: object
+            list:
+              max: 10
+            fields:
+              - name: label
+                label: 子菜单标签
+                type: string
+                required: true
+              
+              - name: url
+                label: 链接地址
+                type: string
+                required: true
+              
+              - name: description
+                label: 描述
+                type: string
+      
+      - name: footerMenu
+        label: 页脚菜单
+        type: object
+        list:
+          max: 4
+          collapsible:
+            collapsed: true
+            summary: "{title}"
+        fields:
+          - name: title
+            label: 栏目标题
+            type: string
+            required: true
+          
+          - name: links
+            label: 链接列表
+            type: object
+            list:
+              min: 1
+              max: 10
+            fields:
+              - name: label
+                label: 链接文本
+                type: string
+                required: true
+              
+              - name: url
+                label: 链接地址
+                type: string
+                required: true
+
+# 全局设置
 settings:
-  hide: false          # 显示「设置」按钮
+  hide: false
   content:
-    merge: true        # 保存时合并已有字段，防止覆盖隐藏字段
+    merge: true

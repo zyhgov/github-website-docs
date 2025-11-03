@@ -1,224 +1,482 @@
-# .pages.yml
-# Pages CMS 核心配置文件
+# .pages.yml - 完整配置示例
+# Pages CMS 配置文件
 
-# ====================================================================
-# SETTINGS: 全局行为设置
-# ====================================================================
-settings:
-  # 是否隐藏 Pages CMS 界面中的 "Settings" 链接
-  hide: false 
-  content:
-    # 启用内容合并：只更新表单中编辑过的字段，保留文件中未在配置中定义的字段。
-    merge: true 
-
-# ====================================================================
-# MEDIA: 媒体配置
-# --------------------------------------------------------------------
-# 定义两个媒体存储区：一个用于图片，一个用于通用文件。
+# 媒体文件配置
 media:
   - name: images
-    label: 图片库
-    # 仓库中的存储路径
-    input: src/assets/images
-    # 网站中访问图片的路径
-    output: /assets/images
-    # 仅允许显示图片类型
-    categories: [ image ] 
-    extensions: [ jpg, jpeg, png, webp, svg ]
+    label: 图片
+    input: src/images
+    output: /images
+    categories: [image]
+    path: images/
+  - name: documents
+    label: 文档
+    input: src/files
+    output: /files
+    categories: [document]
+  - name: assets
+    label: 资源文件
+    input: public/assets
+    output: /assets
+    extensions: [svg, ico, webp, avif]
 
-  - name: files
-    label: 文档与附件
-    input: src/assets/files
-    output: /assets/files
-    # 允许所有常见文档和压缩文件
-    categories: [ document, video, compressed ]
-
-
-# ====================================================================
-# COMPONENTS: 可重用组件
-# --------------------------------------------------------------------
+# 可重用的组件定义
 components:
-  # 1. SEO 优化组件
+  # SEO组件
   seo:
-    label: SEO 元数据
+    label: SEO设置
     type: object
-    description: 搜索引擎优化所需的标题和描述。
     fields:
-      - name: seo_title
-        label: SEO 标题
-        type: string
-        description: 最佳长度为 60-70 个字符。
-        required: true
-      - name: seo_description
-        label: SEO 描述
+      - name: title
+        label: SEO标题
         type: text
-        description: 最佳长度为 150-160 个字符。
-        options: { maxlength: 160 }
-        
-  # 2. CTA (Call to Action) 按钮组件
-  cta_button:
-    label: 行动按钮
+        description: 用于搜索引擎显示的标题
+      - name: description
+        label: 描述
+        type: text
+        description: 页面描述，用于搜索引擎和社交媒体分享
+      - name: keywords
+        label: 关键词
+        type: string
+        list: true
+        description: 用逗号分隔的关键词列表
+      - name: og_image
+        label: 社交媒体图片
+        type: image
+        description: 在社交媒体分享时显示的图片
+
+  # 作者信息组件
+  author:
+    label: 作者信息
     type: object
     fields:
-      - name: text
-        label: 按钮文本
+      - name: name
+        label: 姓名
         type: string
         required: true
-      - name: url
-        label: 链接地址 (URL)
+      - name: email
+        label: 邮箱
         type: string
+        pattern:
+          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          message: '请输入有效的邮箱地址'
+      - name: bio
+        label: 个人简介
+        type: text
+      - name: avatar
+        label: 头像
+        type: image
+
+  # 英雄区域组件
+  hero:
+    label: 英雄区域
+    type: object
+    fields:
+      - name: title
+        label: 主标题
+        type: text
         required: true
-        pattern: 
-          regex: '^(https?:\/\/|\/|#).*' # 允许 http/https, 相对路径或片段
-          message: '请输入有效的 URL (包含 http/https, / 或 #)'
+      - name: subtitle
+        label: 副标题
+        type: text
+      - name: background
+        label: 背景图片
+        type: image
+      - name: cta_text
+        label: 行动号召文字
+        type: string
+      - name: cta_link
+        label: 行动号召链接
+        type: string
 
-
-# ====================================================================
-# CONTENT: 内容定义
-# --------------------------------------------------------------------
+# 内容配置
 content:
-  # ----------------------------------------
-  # 1. 集合：博客文章 (Blog Posts)
-  # ----------------------------------------
+  # 博客文章集合
   - name: posts
     label: 博客文章
     type: collection
-    path: src/posts
-    # 文件名格式：年份-月份-日期-主要字段值.md
-    filename: "{year}-{month}-{day}-{primary}.md"
-    format: yaml-frontmatter 
+    path: src/content/posts
+    format: yaml-frontmatter
+    filename: '{year}-{month}-{day}-{slug}.md'
+    subfolders: false
     
+    # 视图配置
     view:
-      fields: [ title, date, published ]
+      layout: list
+      fields: [title, date, published, author.name, categories]
       primary: title
-      sort: [ date, title ]
+      sort: [date, title]
+      search: [title, description, body]
       default:
+        search: ''
         sort: date
         order: desc
-        
+    
+    # 字段定义
     fields:
       - name: title
         label: 标题
+        type: text
+        required: true
+        pattern: 
+          regex: '^.{10,100}$'
+          message: '标题长度应在10-100个字符之间'
+      
+      - name: slug
+        label: URL别名
         type: string
         required: true
-        default: "新文章标题" # 允许初次创建通过验证
-
-      - name: published
-        label: 是否发布
-        type: boolean
-        default: false
-        
+        pattern: 
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: '只能使用小写字母、数字和连字符'
+      
       - name: date
         label: 发布日期
         type: date
         required: true
-        # 修正：将 YYYY 改为 yyyy
-        options: { format: yyyy-MM-dd } 
-
+        default: 'now'
+      
+      - name: updated
+        label: 更新日期
+        type: date
+      
+      - name: published
+        label: 发布状态
+        type: boolean
+        default: false
+      
+      - name: featured
+        label: 精选文章
+        type: boolean
+        default: false
+      
+      - name: categories
+        label: 分类
+        type: string
+        list:
+          min: 1
+          max: 3
+          collapsible: false
+        options:
+          suggestions: [技术, 设计, 产品, 市场, 运营, 生活]
+      
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+        options:
+          suggestions: [JavaScript, React, Vue, CSS, 性能优化, 用户体验]
+      
+      - component: seo
+      
+      - name: cover
+        label: 封面图片
+        type: image
+      
+      - name: excerpt
+        label: 摘要
+        type: text
+        description: '文章摘要，用于列表页显示'
+      
       - name: author
-        label: 作者
-        type: select
-        options: { values: [ 'Jane Doe', 'John Smith', 'Pages CMS Team' ] }
-
+        component: author
+      
       - name: body
-        label: 文章内容
-        type: rich-text 
-        
-      - name: seo
-        label: SEO
-        component: seo
-        # 为组件字段提供默认值以防验证失败
-        default: { seo_title: "", seo_description: "" }
+        label: 正文内容
+        type: rich-text
+        required: true
 
-
-  # ----------------------------------------
-  # 2. 文件：关于页面 (About Page)
-  # ----------------------------------------
-  - name: about_page
-    label: 关于我们页面
-    type: file
-    path: src/about.md
+  # 页面集合
+  - name: pages
+    label: 页面
+    type: collection
+    path: src/content/pages
+    format: yaml-frontmatter
+    filename: '{slug}.md'
+    
+    view:
+      layout: tree
+      node:
+        filename: index.md
+        hideDirs: nodes
+      fields: [title, path, published]
+      primary: title
+      sort: [title]
     
     fields:
       - name: title
         label: 页面标题
+        type: text
+        required: true
+      
+      - name: path
+        label: 页面路径
         type: string
         required: true
-        # 【修正 1】为必需的顶层字段添加默认值
-        default: "关于我们" 
-        
-      - name: body
-        label: 页面主体
-        type: rich-text
-        
-      - name: primary_ctas
-        label: 主要行动按钮
+        pattern: 
+          regex: '^\/[a-z0-9\/-]*$'
+          message: '路径必须以斜杠开头，只能包含小写字母、数字、连字符和斜杠'
+      
+      - name: published
+        label: 发布状态
+        type: boolean
+        default: true
+      
+      - component: seo
+      
+      - name: hero
+        component: hero
+      
+      - name: sections
+        label: 内容区块
         type: object
-        component: cta_button
-        # 【修正 2】移除 required: true，以允许文件创建
-        # 设置列表属性，允许用户添加多项
-        list: 
-          min: 1 # 强制用户在编辑时添加至少一项
-          max: 3
-          collapsible: true
-          summary: "{fields.text}"
-          # 保持列表的默认值为空数组，以便初次创建通过
-          default: []
+        list:
+          collapsible:
+            collapsed: false
+            summary: "{type} - {title}"
+        fields:
+          - name: type
+            label: 区块类型
+            type: select
+            required: true
+            options:
+              values:
+                text: 文本区块
+                image: 图片区块
+                cards: 卡片区块
+                cta: 行动号召
           
-      - name: seo
-        label: SEO
-        component: seo
-        # 【修正 3】为引用组件的字段提供包含子字段默认值的 default
-        default: { seo_title: "", seo_description: "" }
+          - name: title
+            label: 区块标题
+            type: string
+          
+          - name: content
+            label: 内容
+            type: rich-text
+          
+          - name: image
+            label: 图片
+            type: image
+          
+          - name: buttons
+            label: 按钮
+            type: object
+            list: true
+            fields:
+              - name: text
+                label: 按钮文字
+                type: string
+              - name: link
+                label: 链接
+                type: string
+      
+      - name: body
+        label: 页面内容
+        type: rich-text
 
-
-  # ----------------------------------------
-  # 3. 文件：主页 (Home page)
-  # ----------------------------------------
-  - label: Home page
-    path: src/index.njk
-    name: homepage
-    type: file
+  # 产品集合
+  - name: products
+    label: 产品
+    type: collection
+    path: src/content/products
+    format: yaml-frontmatter
+    
+    view:
+      fields: [name, price, category, featured, published]
+      primary: name
+      sort: [price, name]
+      search: [name, description, features]
+      default:
+        sort: name
+        order: asc
     
     fields:
-      - name: layout
+      - name: name
+        label: 产品名称
+        type: text
+        required: true
+      
+      - name: slug
+        label: URL别名
         type: string
-        hidden: true
-        default: layouts/base.njk
-        
-      # 组合字段 1: Promotion
-      - name: Promotion
-        label: Promotion
-        type: object
-        # 【修正】为对象字段提供包含子字段默认值的 default
-        default: { text: "", url: "" } 
-        fields:
-          - name: text
-            label: Text
-            type: string
-            
-          - name: url
-            label: URL
-            type: string
-            # 保持 required: true，但 default 解决了初次创建问题
-            required: true 
-            
-      # 组合字段 2: Features
+        required: true
+      
+      - name: description
+        label: 产品描述
+        type: text
+        required: true
+      
+      - name: price
+        label: 价格
+        type: number
+        required: true
+      
+      - name: compare_price
+        label: 原价
+        type: number
+      
+      - name: category
+        label: 产品分类
+        type: select
+        required: true
+        options:
+          values:
+            electronics: 电子产品
+            clothing: 服装
+            books: 图书
+            home: 家居用品
+      
+      - name: featured
+        label: 推荐产品
+        type: boolean
+        default: false
+      
+      - name: published
+        label: 上架状态
+        type: boolean
+        default: true
+      
+      - name: images
+        label: 产品图片
+        type: image
+        list:
+          min: 1
+          max: 5
+      
       - name: features
-        label: Features
+        label: 产品特性
+        type: string
+        list: true
+      
+      - name: specifications
+        label: 规格参数
         type: object
-        # 【修正】为对象字段提供包含子字段默认值的 default
-        default: { icon: "", title: "", description: "" } 
+        list:
+          collapsible: true
         fields:
-          - name: icon
-            label: Icon
+          - name: key
+            label: 参数名
             type: string
-            
+          - name: value
+            label: 参数值
+            type: string
+      
+      - component: seo
+
+  # 网站配置（单文件）
+  - name: site_config
+    label: 网站配置
+    type: file
+    path: src/data/site.yaml
+    format: yaml
+    
+    fields:
+      - name: site
+        label: 网站信息
+        type: object
+        fields:
           - name: title
-            label: Title
+            label: 网站标题
             type: string
             required: true
-            
           - name: description
-            label: Description
+            label: 网站描述
+            type: text
+          - name: logo
+            label: 网站Logo
+            type: image
+          - name: favicon
+            label: 网站图标
+            type: image
+      
+      - name: social
+        label: 社交媒体
+        type: object
+        list: true
+        fields:
+          - name: platform
+            label: 平台
+            type: select
+            options:
+              values:
+                twitter: Twitter
+                facebook: Facebook
+                instagram: Instagram
+                linkedin: LinkedIn
+                github: GitHub
+          - name: url
+            label: 链接
             type: string
+      
+      - name: contact
+        label: 联系信息
+        type: object
+        fields:
+          - name: email
+            label: 邮箱
+            type: string
+          - name: phone
+            label: 电话
+            type: string
+          - name: address
+            label: 地址
+            type: text
+
+  # 导航菜单配置
+  - name: navigation
+    label: 导航菜单
+    type: file
+    path: src/data/navigation.yaml
+    format: yaml
+    
+    fields:
+      - name: header
+        label: 顶部导航
+        type: object
+        list: true
+        fields:
+          - name: label
+            label: 菜单文字
+            type: string
+            required: true
+          - name: url
+            label: 链接地址
+            type: string
+            required: true
+          - name: children
+            label: 子菜单
+            type: object
+            list: true
+            fields:
+              - name: label
+                label: 子菜单文字
+                type: string
+              - name: url
+                label: 子菜单链接
+                type: string
+      
+      - name: footer
+        label: 底部导航
+        type: object
+        list: true
+        fields:
+          - name: section
+            label: 区块标题
+            type: string
+          - name: links
+            label: 链接列表
+            type: object
+            list: true
+            fields:
+              - name: label
+                label: 链接文字
+                type: string
+              - name: url
+                label: 链接地址
+                type: string
+
+# 全局设置
+settings:
+  hide: false
+  content:
+    merge: true

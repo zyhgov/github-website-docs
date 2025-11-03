@@ -2,13 +2,27 @@
 # Pages CMS 核心配置文件
 
 # ====================================================================
-# MEDIA: 媒体配置 (保持不变)
+# SETTINGS: 全局行为设置
 # ====================================================================
+settings:
+  # 是否隐藏 Pages CMS 界面中的 "Settings" 链接
+  hide: false 
+  content:
+    # 启用内容合并：只更新表单中编辑过的字段，保留文件中未在配置中定义的字段。
+    merge: true 
+
+# ====================================================================
+# MEDIA: 媒体配置
+# --------------------------------------------------------------------
+# 定义两个媒体存储区：一个用于图片，一个用于通用文件。
 media:
   - name: images
     label: 图片库
+    # 仓库中的存储路径
     input: src/assets/images
+    # 网站中访问图片的路径
     output: /assets/images
+    # 仅允许显示图片类型
     categories: [ image ] 
     extensions: [ jpg, jpeg, png, webp, svg ]
 
@@ -16,13 +30,15 @@ media:
     label: 文档与附件
     input: src/assets/files
     output: /assets/files
+    # 允许所有常见文档和压缩文件
     categories: [ document, video, compressed ]
 
 
 # ====================================================================
-# COMPONENTS: 可重用组件 (保持不变)
-# ====================================================================
+# COMPONENTS: 可重用组件
+# --------------------------------------------------------------------
 components:
+  # 1. SEO 优化组件
   seo:
     label: SEO 元数据
     type: object
@@ -39,6 +55,7 @@ components:
         description: 最佳长度为 150-160 个字符。
         options: { maxlength: 160 }
         
+  # 2. CTA (Call to Action) 按钮组件
   cta_button:
     label: 行动按钮
     type: object
@@ -52,7 +69,7 @@ components:
         type: string
         required: true
         pattern: 
-          regex: '^(https?:\/\/|\/|#).*'
+          regex: '^(https?:\/\/|\/|#).*' # 允许 http/https, 相对路径或片段
           message: '请输入有效的 URL (包含 http/https, / 或 #)'
 
 
@@ -61,12 +78,13 @@ components:
 # --------------------------------------------------------------------
 content:
   # ----------------------------------------
-  # 1. 集合：博客文章 (Blog Posts) - 【日期格式已修正】
+  # 1. 集合：博客文章 (Blog Posts)
   # ----------------------------------------
   - name: posts
     label: 博客文章
     type: collection
     path: src/posts
+    # 文件名格式：年份-月份-日期-主要字段值.md
     filename: "{year}-{month}-{day}-{primary}.md"
     format: yaml-frontmatter 
     
@@ -83,6 +101,7 @@ content:
         label: 标题
         type: string
         required: true
+        default: "新文章标题" # 允许初次创建通过验证
 
       - name: published
         label: 是否发布
@@ -93,7 +112,7 @@ content:
         label: 发布日期
         type: date
         required: true
-        # *** 修正点：将 YYYY 改为 yyyy ***
+        # 修正：将 YYYY 改为 yyyy
         options: { format: yyyy-MM-dd } 
 
       - name: author
@@ -108,53 +127,98 @@ content:
       - name: seo
         label: SEO
         component: seo
+        # 为组件字段提供默认值以防验证失败
+        default: { seo_title: "", seo_description: "" }
+
 
   # ----------------------------------------
-  # 2. 文件：关于页面 (About Page) (保持不变)
+  # 2. 文件：关于页面 (About Page)
   # ----------------------------------------
-      - name: about_page
-        label: 关于我们页面
-        type: file
-        path: src/about.md
-          
+  - name: about_page
+    label: 关于我们页面
+    type: file
+    path: src/about.md
+    
     fields:
       - name: title
         label: 页面标题
         type: string
         required: true
         # 【修正 1】为必需的顶层字段添加默认值
-        default: "" 
+        default: "关于我们" 
         
       - name: body
         label: 页面主体
         type: rich-text
         
-      # primary_ctas 字段
       - name: primary_ctas
         label: 主要行动按钮
         type: object
         component: cta_button
-        # 【修正 2】移除 required: true 标记，以允许创建空文件
-        # list 最小值为 1 仍会强制用户在编辑时添加至少一项，但允许文件创建
+        # 【修正 2】移除 required: true，以允许文件创建
+        # 设置列表属性，允许用户添加多项
         list: 
-          min: 1 
+          min: 1 # 强制用户在编辑时添加至少一项
           max: 3
           collapsible: true
           summary: "{fields.text}"
-          # 保持列表的默认值为空数组
+          # 保持列表的默认值为空数组，以便初次创建通过
           default: []
           
-      # seo 字段
       - name: seo
         label: SEO
         component: seo
         # 【修正 3】为引用组件的字段提供包含子字段默认值的 default
         default: { seo_title: "", seo_description: "" }
+
+
+  # ----------------------------------------
+  # 3. 文件：主页 (Home page)
+  # ----------------------------------------
+  - label: Home page
+    path: src/index.njk
+    name: homepage
+    type: file
+    
+    fields:
+      - name: layout
+        type: string
+        hidden: true
+        default: layouts/base.njk
         
-# ====================================================================
-# SETTINGS: 全局行为设置 (保持不变)
-# ====================================================================
-settings:
-  hide: false 
-  content:
-    merge: true
+      # 组合字段 1: Promotion
+      - name: Promotion
+        label: Promotion
+        type: object
+        # 【修正】为对象字段提供包含子字段默认值的 default
+        default: { text: "", url: "" } 
+        fields:
+          - name: text
+            label: Text
+            type: string
+            
+          - name: url
+            label: URL
+            type: string
+            # 保持 required: true，但 default 解决了初次创建问题
+            required: true 
+            
+      # 组合字段 2: Features
+      - name: features
+        label: Features
+        type: object
+        # 【修正】为对象字段提供包含子字段默认值的 default
+        default: { icon: "", title: "", description: "" } 
+        fields:
+          - name: icon
+            label: Icon
+            type: string
+            
+          - name: title
+            label: Title
+            type: string
+            required: true
+            
+          - name: description
+            label: Description
+            type: string

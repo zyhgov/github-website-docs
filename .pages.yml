@@ -1,165 +1,245 @@
-# .pages.yml - 中文完整版
-# Pages CMS 配置文件
+# ==========================================================
+#  Pages CMS 全中文配置文件
+#  适用：Jekyll / Hugo / Next.js / VuePress ……
+# ==========================================================
 
-# 媒体文件配置
+# 1. 媒体资源（支持多目录、多后缀、多类别）
 media:
   - name: images
     label: 图片库
-    input: images
-    output: /images
-    categories: [image]
-  - name: documents
+    input: assets/images           # 仓库内路径
+    output: /images                # 站点最终访问路径
+    categories: [image]            # 只允许图片
+  - name: docs
     label: 文档库
-    input: files
-    output: /files
-    categories: [document]
+    input: assets/docs
+    output: /docs
+    categories: [document]         # pdf/doc/xls/txt …
+  - name: videos
+    label: 视频库
+    input: assets/videos
+    output: /videos
+    categories: [video]
 
-# 可重用的组件定义
+# 2. 可复用「组件」定义（供字段引用）
 components:
-  # SEO组件
   seo:
-    label: SEO设置
+    label: SEO 设置
     type: object
     fields:
-      - name: meta_title
-        label: Meta标题
-        type: text
-        description: 用于搜索引擎显示的标题
-      - name: meta_description
-        label: Meta描述
-        type: text
-        description: 用于搜索引擎和社交媒体分享的描述
-      - name: og_image
-        label: 社交媒体图片
-        type: image
-        description: 在社交媒体分享时显示的图片
-
-  # 作者信息组件
-  author:
-    label: 作者信息
-    type: object
-    fields:
-      - name: name
-        label: 姓名
+      - name: title
+        label: SEO 标题
         type: string
+        pattern:
+          regex: '^.{5,60}$'
+          message: 'SEO 标题 5-60 个字符'
+      - name: description
+        label: SEO 描述
+        type: text
+        pattern:
+          regex: '^.{20,160}$'
+          message: 'SEO 描述 20-160 个字符'
+      - name: keywords
+        label: 关键词
+        type: string
+        list: true
+        list:
+          max: 5
+          summary: '关键词 {index}: {value}'
+
+  hero:
+    label: Hero 横幅
+    type: object
+    fields:
+      - name: headline
+        label: 主标题
+        type: text
         required: true
-      - name: email
-        label: 邮箱
-        type: string
-      - name: avatar
-        label: 头像
+      - name: subline
+        label: 副标题
+        type: text
+      - name: cover
+        label: 封面图
         type: image
+        required: true
+      - name: alt
+        label: 替代文本
+        type: string
 
-# 内容配置
+# 3. 内容集合 & 单文件
 content:
-  # 博客文章集合
+  # 3.1 博客文章
   - name: posts
     label: 博客文章
     type: collection
-    path: content/posts
+    path: _posts
     format: yaml-frontmatter
-    filename: '{slug}.md'
-    
-    # 视图配置
+    filename: '{year}-{month}-{day}-{slug}.md'
+    subfolders: false
     view:
       layout: list
-      fields: [title, date, published]
       primary: title
-      sort: [date]
+      fields: [title, date, author, published, tags]
+      sort: [date, title]
       default:
         sort: date
         order: desc
-    
-    # 字段定义
+      search: [title, description, tags]
     fields:
       - name: title
         label: 文章标题
-        type: text
-        required: true
-      
-      - name: slug
-        label: URL别名
         type: string
         required: true
-      
+      - name: slug
+        label: URL _slug
+        type: string
+        pattern: '^[a-z0-9-]+$'
+        description: '小写、数字、短横线，如: my-first-post'
       - name: date
         label: 发布日期
         type: date
         required: true
         default: 'now'
-      
-      - name: published
-        label: 发布状态
-        type: boolean
-        default: false
-      
-      - name: excerpt
-        label: 文章摘要
+      - name: author
+        label: 作者
+        type: reference
+        collection: authors
+        required: true
+      - name: tags
+        label: 标签
+        type: string
+        list:
+          max: 5
+          collapsible: true
+      - name: cover
+        label: 封面图
+        type: image
+      - name: description
+        label: 摘要
         type: text
-        description: '简短的文章摘要，用于列表页显示'
-      
+        pattern: '^.{30,200}$'
+        message: '摘要 30-200 字'
+      - name: seo
+        label: SEO
+        component: seo
       - name: body
-        label: 正文内容
+        label: 正文
         type: rich-text
         required: true
 
-  # 页面集合
-  - name: pages
-    label: 页面管理
+  # 3.2 作者
+  - name: authors
+    label: 作者管理
     type: collection
-    path: content/pages
+    path: _data/authors
+    format: json
+    filename: '{slug}.json'
+    view:
+      primary: name
+      fields: [name, avatar, email]
+      sort: [name]
+    fields:
+      - name: slug
+        label: 英文缩写
+        type: string
+        pattern: '^[a-z0--]+$'
+        required: true
+      - name: name
+        label: 姓名
+        type: string
+        required: true
+      - name: avatar
+        label: 头像
+        type: image
+      - name: email
+        label: 邮箱
+        type: string
+        pattern:
+          regex: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+          message: '请输入合法邮箱'
+      - name: bio
+        label: 简介
+        type: text
+
+  # 3.3 单页（关于 / 联系 / 自定义）
+  - name: pages
+    label: 单页管理
+    type: collection
+    path: _pages
     format: yaml-frontmatter
     filename: '{slug}.md'
-    
     view:
-      layout: list
-      fields: [title, published]
       primary: title
-      sort: [title]
-    
+      fields: [title, updated]
+      sort: [updated]
     fields:
       - name: title
         label: 页面标题
-        type: text
-        required: true
-      
-      - name: slug
-        label: URL别名
         type: string
         required: true
-      
-      - name: published
-        label: 发布状态
-        type: boolean
-        default: true
-      
+      - name: slug
+        label: 页面路径
+        type: string
+        pattern: '^[a-z0-9-/]+$'
+        description: '例: about 或 company/contact'
+      - name: updated
+        label: 更新时间
+        type: date
+        default: 'now'
+      - name: hero
+        label: 顶部横幅
+        component: hero
       - name: body
-        label: 页面内容
+        label: 正文
         type: rich-text
+        required: true
+      - name: seo
+        label: SEO
+        component: seo
 
-  # 网站配置
-  - name: site
-    label: 网站配置
+  # 3.4 全局配置（单文件）
+  - name: config
+    label: 站点配置
     type: file
-    path: data/site.yaml
-    format: yaml
-    
+    path: _data/config.json
+    format: json
     fields:
       - name: title
-        label: 网站标题
+        label: 站点标题
         type: string
         required: true
-      
-      - name: description
-        label: 网站描述
-        type: text
-      
+      - name: subtitle
+        label: 站点副标题
+        type: string
       - name: logo
-        label: 网站Logo
+        label: Logo
         type: image
+      - name: icp
+        label: 备案号
+        type: string
+        pattern: '^ICP-\d{8}-\d$'
+        description: '例: ICP-12345678-1'
+      - name: social
+        label: 社交媒体
+        type: object
+        list: true
+        list:
+          max: 6
+          summary: '{platform}: {url}'
+        fields:
+          - name: platform
+            label: 平台
+            type: select
+            options: [微博, 知乎, GitHub, Twitter, 微信, 抖音]
+            required: true
+          - name: url
+            label: 链接
+            type: string
+            pattern: '^https?://.+'
+            required: true
 
-# 全局设置
+# 4. 全局设置
 settings:
-  hide: false
+  hide: false          # 显示「设置」按钮
   content:
-    merge: true
+    merge: true        # 保存时合并已有字段，防止覆盖隐藏字段
